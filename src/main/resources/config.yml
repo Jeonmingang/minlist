@@ -1,0 +1,15 @@
+links:
+  minelist: "https://minelist.kr/servers/your-server-id"
+  minepage: "https://mine.page/servers/your-server-id"
+announce:
+  enabled: true
+  interval-seconds: 30
+  message: "&a[알림]&f 마인리스트/마인페이지 추천 부탁드립니다! &e{minelist}&f / &b{minepage}"
+rewards:
+  slots:
+    minelist: [10,11,12,13,14,15,16]
+    minepage: [28,29,30,31,32,33,34]
+  data:
+    minelist: []
+    minepage: []
+queue-offline: true
