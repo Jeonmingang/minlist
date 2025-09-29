@@ -1,0 +1,5 @@
+enabled: true
+interval-seconds: 60
+messages:
+  1: "&a[공지]&f 디스코드 참여: &bdiscord.gg/yourcode"
+  2: "&e[이벤트]&f 매일 &a/보상 &f확인!"

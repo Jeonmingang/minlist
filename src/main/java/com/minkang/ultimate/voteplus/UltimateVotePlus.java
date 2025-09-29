@@ -29,6 +29,7 @@ import java.lang.reflect.Method;
 import java.util.*;
 
 public class UltimateVotePlus extends JavaPlugin implements Listener {
+    private AutoNoticeManager autoNoticeManager;
 
     private Inventory gui;
     private int taskId = -1;
@@ -41,8 +42,18 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
     @Override
     public void onEnable() {
         saveDefaultConfig();
+        // Auto notice wiring
+        this.autoNoticeManager = new AutoNoticeManager(this);
+        this.autoNoticeManager.load();
+        this.autoNoticeManager.start();
         setupFiles();
         getServer().getPluginManager().registerEvents(this, this);
+        // Register /자동공지 command
+        if (getCommand("자동공지") != null) {
+            AutoNoticeCommand anc = new AutoNoticeCommand(this.autoNoticeManager);
+            getCommand("자동공지").setExecutor(anc);
+            getCommand("자동공지").setTabCompleter(anc);
+        }
         startAnnounceTask();
         hookVotifier();
         log("&aUltimateVotePlus v1.2.0 enabled.");
@@ -50,6 +61,7 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
 
     @Override
     public void onDisable() {
+        if (autoNoticeManager != null) autoNoticeManager.stop();
         if (taskId != -1) {
             Bukkit.getScheduler().cancelTask(taskId);
             taskId = -1;

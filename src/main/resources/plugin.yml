@@ -6,6 +6,11 @@ authors: [Mingang, GPT]
 softdepend: [NuVotifier]
 commands:
   마인리스트:
+자동공지:
+  description: 자동 공지 관리
+  usage: /자동공지 [목록|추가 <번호> <내용>|삭제 <번호>|시간 <초>|켜기|끄기]
+  aliases: [autonotice, notice]
+
     description: 추천 링크 안내 및 관리
     usage: /마인리스트 [설정|리로드|테스트 <닉네임> [사이트키]]
 permissions:

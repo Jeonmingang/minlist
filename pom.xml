@@ -48,6 +48,7 @@
             <include>com/minkang/ultimate/**</include>
             <include>plugin.yml</include>
             <include>config.yml</include>
+            <include>autonotice.yml</include>
           </includes>
         </configuration>
       </plugin>
