@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.minkang.ultimate</groupId>
   <artifactId>UltimateVotePlus</artifactId>
-  <version>1.2.0</version>
+  <version>1.2.1/version>
   <name>UltimateVotePlus</name>
   <description>마인리스트/마인페이지 추천 링크 안내 + NuVotifier 투표 연동 + GUI 아이템 보상 + 누적 브로드캐스트</description>
   <properties>
