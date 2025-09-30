@@ -1,0 +1,108 @@
+package com.minkang.ultimate.voteplus;
+
+import org.bukkit.ChatColor;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+public class AutoNoticeCommand implements CommandExecutor, TabCompleter {
+    private final AutoNoticeManager manager;
+
+    public AutoNoticeCommand(AutoNoticeManager manager) {
+        this.manager = manager;
+    }
+
+    private String color(String s) {
+        return ChatColor.translateAlternateColorCodes('&', s);
+    }
+
+    @Override
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (args.length == 0) {
+            sender.sendMessage(color("&a/자동공지 &7[추가|삭제|목록|시간|켜기|끄기] ..."));
+            sender.sendMessage(color("&7 - &f/자동공지 목록"));
+            sender.sendMessage(color("&7 - &f/자동공지 추가 <번호> <내용>"));
+            sender.sendMessage(color("&7 - &f/자동공지 삭제 <번호>"));
+            sender.sendMessage(color("&7 - &f/자동공지 시간 <초>"));
+            sender.sendMessage(color("&7 - &f/자동공지 켜기 | /자동공지 끄기"));
+            return true;
+        }
+        String sub = args[0];
+        if (sub.equalsIgnoreCase("목록")) {
+            manager.sendList(sender);
+            return true;
+        }
+        if (sub.equalsIgnoreCase("추가")) {
+            if (args.length < 3) { sender.sendMessage(color("&c사용법: /자동공지 추가 <번호> <내용>")); return true; }
+            try {
+                int id = Integer.parseInt(args[1]);
+                String content = String.join(" ", Arrays.copyOfRange(args, 2, args.length));
+                manager.addMessage(id, content);
+                sender.sendMessage(color("&a추가됨: &e#" + id + " &7→ &f" + content));
+                // 즉시 재시작해서 반영
+                manager.stop();
+                manager.start();
+            } catch (NumberFormatException ex) {
+                sender.sendMessage(color("&c번호는 정수여야 합니다."));
+            }
+            return true;
+        }
+        if (sub.equalsIgnoreCase("삭제")) {
+            if (args.length < 2) { sender.sendMessage(color("&c사용법: /자동공지 삭제 <번호>")); return true; }
+            try {
+                int id = Integer.parseInt(args[1]);
+                boolean ok = manager.removeMessage(id);
+                if (ok) {
+                    sender.sendMessage(color("&a삭제됨: &e#" + id));
+                    manager.stop();
+                    manager.start();
+                } else {
+                    sender.sendMessage(color("&c해당 번호의 메시지가 없습니다."));
+                }
+            } catch (NumberFormatException ex) {
+                sender.sendMessage(color("&c번호는 정수여야 합니다."));
+            }
+            return true;
+        }
+        if (sub.equalsIgnoreCase("시간")) {
+            if (args.length < 2) { sender.sendMessage(color("&c사용법: /자동공지 시간 <초> (최소 5초)")); return true; }
+            try {
+                int sec = Integer.parseInt(args[1]);
+                manager.setIntervalSeconds(sec);
+                sender.sendMessage(color("&a간격 설정: &e" + manager.getIntervalSeconds() + "초"));
+            } catch (NumberFormatException ex) {
+                sender.sendMessage(color("&c시간은 정수여야 합니다."));
+            }
+            return true;
+        }
+        if (sub.equalsIgnoreCase("켜기")) {
+            manager.setEnabled(true);
+            sender.sendMessage(color("&a자동공지를 켰습니다."));
+            return true;
+        }
+        if (sub.equalsIgnoreCase("끄기")) {
+            manager.setEnabled(false);
+            sender.sendMessage(color("&c자동공지를 껐습니다."));
+            return true;
+        }
+        sender.sendMessage(color("&c알 수 없는 하위 명령입니다. /자동공지 로 도움말을 확인하세요."));
+        return true;
+    }
+
+    @Override
+    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+        if (args.length == 1) {
+            return Arrays.asList("목록","추가","삭제","시간","켜기","끄기");
+        }
+        if (args.length == 2 && (args[0].equalsIgnoreCase("삭제") || args[0].equalsIgnoreCase("추가"))) {
+            return Collections.singletonList("1");
+        }
+        return new ArrayList<>();
+    }
+}
