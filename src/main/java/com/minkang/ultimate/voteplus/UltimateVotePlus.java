@@ -29,6 +29,7 @@ import java.lang.reflect.Method;
 import java.util.*;
 
 public class UltimateVotePlus extends JavaPlugin implements Listener {
+    private MonthlyRewardManager monthly;
     private AutoNoticeManager autoNoticeManager;
 
     private Inventory gui;
@@ -56,7 +57,8 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
         }
         startAnnounceTask();
         hookVotifier();
-        log("&aUltimateVotePlus v1.2.0 enabled.");
+        monthly = new MonthlyRewardManager(this);
+        log("&aUltimateVotePlus v1.3.2 enabled.");
     }
 
     @Override
@@ -163,6 +165,7 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
         }
 
         incrementStats(playerName, type);
+        if (monthly != null) monthly.recordVote(playerName);
         maybeBroadcastReward(playerName, type);
     }
 

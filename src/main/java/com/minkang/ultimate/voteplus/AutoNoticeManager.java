@@ -30,6 +30,7 @@ public class AutoNoticeManager {
     private YamlConfiguration yaml;
     private int taskId = -1;
     private final AtomicInteger index = new AtomicInteger(0);
+    private final Map<Integer, Integer> runningTasks = new LinkedHashMap<>();
 
     public AutoNoticeManager(JavaPlugin plugin) {
         this.plugin = plugin;
@@ -42,7 +43,7 @@ public class AutoNoticeManager {
                 plugin.getDataFolder().mkdirs();
                 yaml = new YamlConfiguration();
                 yaml.set("enabled", true);
-                yaml.set("interval-seconds", 60);
+                yaml.set("interval-seconds", 60); yaml.createSection("intervals");
                 Map<String, String> defaults = new LinkedHashMap<>();
                 defaults.put("1", "&a[공지]&f 디스코드 참여: &bdiscord.gg/yourcode");
                 defaults.put("2", "&e[이벤트]&f 매일 &a/보상 &f확인!");
@@ -51,7 +52,7 @@ public class AutoNoticeManager {
             }
             yaml = YamlConfiguration.loadConfiguration(file);
             // 보정
-            if (!yaml.isInt("interval-seconds")) yaml.set("interval-seconds", 60);
+            if (!yaml.isInt("interval-seconds")) yaml.set("interval-seconds", 60); yaml.createSection("intervals");
             if (!yaml.isConfigurationSection("messages")) yaml.createSection("messages");
             save();
         } catch (Exception e) {
@@ -122,6 +123,27 @@ public class AutoNoticeManager {
         return false;
     }
 
+    
+    public int getDefaultIntervalSeconds() {
+        int sec = yaml.getInt("interval-seconds", 60);
+        return Math.max(5, sec);
+    }
+    public void setDefaultIntervalSeconds(int sec) {
+        yaml.set("interval-seconds", Math.max(5, sec));
+        save();
+        if (isRunning()) { stop(); start(); }
+    }
+    public int getIntervalSeconds(int id) {
+        int v = yaml.getInt("intervals." + id, -1);
+        if (v <= 0) return getDefaultIntervalSeconds();
+        return Math.max(5, v);
+    }
+    public void setIntervalSeconds(int id, int sec) {
+        yaml.set("intervals." + id, Math.max(5, sec));
+        save();
+        if (isRunning()) { stop(); start(); }
+    }
+
     public boolean isRunning() {
         return taskId != -1;
     }
@@ -130,11 +152,19 @@ public class AutoNoticeManager {
         if (!isEnabled()) return;
         if (isRunning()) stop();
 
-        final List<Map.Entry<Integer, String>> entries = new ArrayList<>(getMessages().entrySet());
-        if (entries.isEmpty()) {
-            // 메시지가 없으면 동작하지 않음
-            return;
+        Map<Integer, String> map = new LinkedHashMap<>(getMessages());
+        taskId = 0; // marker that we're running
+        // For each message, schedule its own task with its own interval
+        for (Map.Entry<Integer, String> e : map.entrySet()) {
+            final int id = e.getKey();
+            final String msg = ChatColor.translateAlternateColorCodes('&', e.getValue());
+            final int sec = getIntervalSeconds(id);
+            int tid = Bukkit.getScheduler().scheduleSyncRepeatingTask((JavaPlugin) plugin, () -> {
+                Bukkit.broadcastMessage(msg);
+            }, 20L * 5, 20L * sec); // 5초 지연 후 시작
+            runningTasks.put(id, tid);
         }
+    }
         index.set(0);
         int period = Math.max(5, getIntervalSeconds());
 
@@ -149,10 +179,16 @@ public class AutoNoticeManager {
     }
 
     public void stop() {
-        if (taskId != -1) {
-            Bukkit.getScheduler().cancelTask(taskId);
-            taskId = -1;
+        // cancel per-message tasks
+        for (Map.Entry<Integer, Integer> e : new ArrayList<>(runningTasks.entrySet())) {
+            Integer tid = e.getValue();
+            if (tid != null) {
+                try { Bukkit.getScheduler().cancelTask(tid); } catch (Throwable ignore) {}
+            }
         }
+        runningTasks.clear();
+        taskId = -1;
+    }
     }
 
     // 간단한 메시지 헬퍼
@@ -166,9 +202,9 @@ public class AutoNoticeManager {
             sender.sendMessage(color("&7[자동공지] 등록된 메시지가 없습니다."));
             return;
         }
-        sender.sendMessage(color("&a[자동공지 목록] &7(간격: " + getIntervalSeconds() + "초, 상태: " + (isEnabled() ? "&aON" : "&cOFF") + "&7)"));
+        sender.sendMessage(color("&a[자동공지 목록] &7(기본 간격: " + getDefaultIntervalSeconds() + "초, 상태: " + (isEnabled() ? "&aON" : "&cOFF") + "&7)"));
         for (Map.Entry<Integer, String> e : map.entrySet()) {
-            sender.sendMessage(color("&e#" + e.getKey() + "&7: &f" + e.getValue()));
+            sender.sendMessage(color("&e#" + e.getKey() + " &7(" + getIntervalSeconds(e.getKey()) + "초): &f" + e.getValue()));
         }
     }
 }
