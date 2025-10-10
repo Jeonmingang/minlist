@@ -34,9 +34,19 @@ rewards:
   data:
     minelist: []
     minepage: []
+vote-reward:
+  debounce-seconds: 10
+  command-enabled: true
+  command: '캐시 지급 {player} 100'
 monthly-reward:
+  keep-months: 12
   enabled: true
+  reset-cumulative: true
   timezone: Asia/Seoul
-  command: 캐시 지급 {player} 10000
+  command: '캐시 지급 \"{player}\" 10000'
   broadcast: '&e[추천] 지난달 1위 {player} ({count}회) — 10,000 캐시 지급!'
   tie-breaker: earliest
+
+reset-countdown:
+  enabled: true
+  message: '&7[마인리스트 초기화까지 남은시간] &f{time}'

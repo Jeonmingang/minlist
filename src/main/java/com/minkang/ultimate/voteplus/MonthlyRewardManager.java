@@ -4,6 +4,7 @@ package com.minkang.ultimate.voteplus;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -43,6 +44,21 @@ public class MonthlyRewardManager {
         if (!data.isString("lastProcessed")) {
             YearMonth prev = YearMonth.now(zoneId).minusMonths(1);
             data.set("lastProcessed", prev.toString());
+            // optional: reset cumulative stats and totals after month changes
+            if (plugin.getConfig().getBoolean("monthly-reward.reset-cumulative", true)) {
+                // clear plugin-wide totals used for broadcasts
+                data.set("total", 0);
+                data.set("bySite", null);
+                data.set("byPlayer", null);
+                // clear alltime (누적) per-player counts
+                data.set("alltime", null);
+                save();
+                try {
+                    if (plugin instanceof UltimateVotePlus) {
+                        ((UltimateVotePlus) plugin).reloadStatsFromDisk();
+                    }
+                } catch (Throwable ignored) {}
+            }
             save();
         }
     }
@@ -64,6 +80,7 @@ public class MonthlyRewardManager {
     }
 
     private void checkMonthly() {
+        purgeOldMonths(plugin.getConfig().getInt("monthly-reward.keep-months", 12));
         if (!plugin.getConfig().getBoolean("monthly-reward.enabled", true)) return;
         YearMonth now = YearMonth.now(zoneId);
         YearMonth prev = now.minusMonths(1);
@@ -72,6 +89,21 @@ public class MonthlyRewardManager {
         if (last.isBefore(prev)) {
             rewardTopFor(prev);
             data.set("lastProcessed", prev.toString());
+            // optional: reset cumulative stats and totals after month changes
+            if (plugin.getConfig().getBoolean("monthly-reward.reset-cumulative", true)) {
+                // clear plugin-wide totals used for broadcasts
+                data.set("total", 0);
+                data.set("bySite", null);
+                data.set("byPlayer", null);
+                // clear alltime (누적) per-player counts
+                data.set("alltime", null);
+                save();
+                try {
+                    if (plugin instanceof UltimateVotePlus) {
+                        ((UltimateVotePlus) plugin).reloadStatsFromDisk();
+                    }
+                } catch (Throwable ignored) {}
+            }
             save();
         }
     }
@@ -114,5 +146,23 @@ public class MonthlyRewardManager {
                 .replace("{count}", String.valueOf(best))
                 .replace("{month}", ym.toString());
         Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', msg));
+    
+    private void purgeOldMonths(int keep) {
+        if (keep <= 0) return;
+        ConfigurationSection sec = data.getConfigurationSection("monthly");
+        if (sec == null) return;
+        java.util.List<java.time.YearMonth> months = new java.util.ArrayList<>();
+        for (String k : sec.getKeys(false)) {
+            try { months.add(java.time.YearMonth.parse(k)); } catch (Exception ignored) {}
+        }
+        java.util.Collections.sort(months);
+        int removeCount = Math.max(0, months.size() - keep);
+        for (int i = 0; i < removeCount; i++) {
+            String key = months.get(i).toString();
+            data.set("monthly." + key, null);
+            data.set("lastVoteTime." + key, null);
+        }
+        save();
     }
+
 }

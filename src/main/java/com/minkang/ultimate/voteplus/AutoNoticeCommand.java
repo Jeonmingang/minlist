@@ -22,6 +22,11 @@ public class AutoNoticeCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (!sender.hasPermission("uvp.admin")) {
+            sender.sendMessage(ChatColor.translateAlternateColorCodes('&',"&c권한이 없습니다. (uvp.admin)"));
+            return true;
+        }
+
         if (args.length == 0) {
             sender.sendMessage(color("&a/자동공지 &7[추가|삭제|목록|시간|기본시간|켜기|끄기]"));
             sender.sendMessage(color("&7 - &f/자동공지 목록"));

@@ -14,6 +14,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import java.time.*;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.Inventory;
@@ -29,6 +30,7 @@ import java.lang.reflect.Method;
 import java.util.*;
 
 public class UltimateVotePlus extends JavaPlugin implements Listener {
+    private final java.util.Map<String, Long> voteDebounce = new java.util.HashMap<>();
     private MonthlyRewardManager monthly;
     private AutoNoticeManager autoNoticeManager;
 
@@ -131,6 +133,12 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
             log("&aVotifierEvent listener hooked.");
         } catch (ClassNotFoundException e) {
             log("&eNuVotifier가 감지되지 않았습니다. 투표 수신 불가.");
+            // Notify ops in-game once
+            Bukkit.getScheduler().runTask(this, () -> {
+                for (org.bukkit.entity.Player op : Bukkit.getOnlinePlayers()) {
+                    if (op.isOp()) op.sendMessage(color("&e[추천] NuVotifier가 설치되지 않아 추천 수신이 불가합니다."));
+                }
+            });
         }
     }
 
@@ -139,6 +147,16 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
         String service = (serviceRaw == null ? "" : serviceRaw.toLowerCase(Locale.ROOT));
 
         ServiceType type = ServiceType.fromServiceName(service);
+        // Debounce duplicate votes
+        int debounceSec = getConfig().getInt("reward.debounce-seconds", 10);
+        String k = playerName.toLowerCase(java.util.Locale.ROOT)+":"+type.name();
+        long now = System.currentTimeMillis();
+        Long last = voteDebounce.get(k);
+        if (debounceSec > 0 && last != null && (now - last) < debounceSec*1000L) {
+            log("&7Debounced duplicate vote: "+k+" ("+(now-last)+"ms)");
+            return;
+        }
+        voteDebounce.put(k, now);
         List<ItemStack> rewards = getConfiguredRewards(type);
 
         Player target = Bukkit.getPlayerExact(playerName);
@@ -166,6 +184,20 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
 
         incrementStats(playerName, type);
         if (monthly != null) monthly.recordVote(playerName);
+        
+        // Per-vote cash reward via console command
+        if (getConfig().getBoolean("vote-reward.command-enabled", true)) {
+            String cmd = getConfig().getString("vote-reward.command", "캐시 지급 {player} 100")
+                    .replace("{player}", playerName)
+                    .replace("{site}", type.display);
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
+        }
+        // countdown message to player
+        if (target != null && getConfig().getBoolean("reset-countdown.enabled", true)) {
+            String left = getTimeLeftToMonthReset();
+            target.sendMessage(color(getConfig().getString("reset-countdown.message", "&7[마인리스트 초기화까지 남은시간] &f{time}")
+                    .replace("{time}", left)));
+        }
         maybeBroadcastReward(playerName, type);
     }
 
@@ -345,7 +377,9 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!command.getName().equals("마인리스트")) return false;
+        String __lbl = label==null?"":label.toLowerCase(java.util.Locale.ROOT);
+        String __cmd = command.getName();
+        if (!(__cmd.equals("마인리스트") || __cmd.equals("추첨") || __lbl.equals("마인리스트") || __lbl.equals("추첨") || __lbl.equals("vote") || __lbl.equals("추천"))) return false;
         if (args.length == 0) {
             String minelist = getConfig().getString("links.minelist", "https://minelist.kr/");
             String minepage = getConfig().getString("links.minepage", "https://mine.page/");
@@ -376,4 +410,35 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
         }
         return false;
     }
+
+    private String getTimeLeftToMonthReset() {
+        String tz = getConfig().getString("monthly-reward.timezone", "Asia/Seoul");
+        ZoneId zone;
+        try { zone = ZoneId.of(tz); } catch (Exception e) { zone = ZoneId.of("Asia/Seoul"); }
+        ZonedDateTime now = ZonedDateTime.now(zone);
+        YearMonth ym = YearMonth.from(now);
+        ZonedDateTime next = ym.plusMonths(1).atDay(1).atStartOfDay(zone);
+        long secs = Duration.between(now, next).getSeconds();
+        if (secs < 0) secs = 0;
+        return formatDuration(secs);
+    }
+
+    private String formatDuration(long seconds) {
+        long s = seconds;
+        long days = s / 86400; s %= 86400;
+        long hours = s / 3600; s %= 3600;
+        long minutes = s / 60; long sec = s % 60;
+        StringBuilder sb = new StringBuilder();
+        if (days > 0) sb.append(days).append("일 ");
+        if (hours > 0 || days > 0) sb.append(hours).append("시간 ");
+        sb.append(minutes).append("분 ").append(sec).append("초");
+        return sb.toString().trim();
+    }
+
+    public void reloadStatsFromDisk() {
+        try {
+            this.stats = org.bukkit.configuration.file.YamlConfiguration.loadConfiguration(this.statsFile);
+        } catch (Exception ignored) {}
+    }
+
 }
