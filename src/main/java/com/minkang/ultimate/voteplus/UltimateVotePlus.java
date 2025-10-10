@@ -380,11 +380,20 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
         String __lbl = label==null?"":label.toLowerCase(java.util.Locale.ROOT);
         String __cmd = command.getName();
         if (!(__cmd.equals("마인리스트") || __cmd.equals("추첨") || __lbl.equals("마인리스트") || __lbl.equals("추첨") || __lbl.equals("vote") || __lbl.equals("추천"))) return false;
+        
         if (args.length == 0) {
             String minelist = getConfig().getString("links.minelist", "https://minelist.kr/");
             String minepage = getConfig().getString("links.minepage", "https://mine.page/");
-            sender.sendMessage(color("&a[추천 링크]&f 마인리스트: &e" + minelist));
-            sender.sendMessage(color("&a[추천 링크]&f 마인페이지: &b" + minepage));
+            java.util.List<String> lines = getConfig().getStringList("link-message");
+            if (lines == null || lines.isEmpty()) {
+                sender.sendMessage(color("&a[추천 링크]&f 마인리스트: &e" + minelist));
+                sender.sendMessage(color("&a[추천 링크]&f 마인페이지: &b" + minepage));
+            } else {
+                for (String line : lines) {
+                    String out = line.replace("{minelist}", minelist).replace("{minepage}", minepage);
+                    sender.sendMessage(color(out));
+                }
+            }
             return true;
         }
         if ("설정".equalsIgnoreCase(args[0])) {
@@ -395,6 +404,7 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
         } else if ("리로드".equalsIgnoreCase(args[0])) {
             if (!sender.hasPermission("uvp.admin")) { sender.sendMessage(color("&c권한이 없습니다. (uvp.admin)")); return true; }
             reloadConfig();
+            if (this.autoNoticeManager != null) { this.autoNoticeManager.load(); this.autoNoticeManager.start(); }
             if (taskId != -1) { Bukkit.getScheduler().cancelTask(taskId); taskId = -1; }
             startAnnounceTask();
             sender.sendMessage(color("&a설정을 리로드하고 알림 태스크를 재시작했습니다."));

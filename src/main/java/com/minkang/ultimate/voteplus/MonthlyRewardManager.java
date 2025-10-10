@@ -4,7 +4,6 @@ package com.minkang.ultimate.voteplus;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -146,23 +145,5 @@ public class MonthlyRewardManager {
                 .replace("{count}", String.valueOf(best))
                 .replace("{month}", ym.toString());
         Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', msg));
-    
-    private void purgeOldMonths(int keep) {
-        if (keep <= 0) return;
-        ConfigurationSection sec = data.getConfigurationSection("monthly");
-        if (sec == null) return;
-        java.util.List<java.time.YearMonth> months = new java.util.ArrayList<>();
-        for (String k : sec.getKeys(false)) {
-            try { months.add(java.time.YearMonth.parse(k)); } catch (Exception ignored) {}
-        }
-        java.util.Collections.sort(months);
-        int removeCount = Math.max(0, months.size() - keep);
-        for (int i = 0; i < removeCount; i++) {
-            String key = months.get(i).toString();
-            data.set("monthly." + key, null);
-            data.set("lastVoteTime." + key, null);
-        }
-        save();
     }
-
 }
