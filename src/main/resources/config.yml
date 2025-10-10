@@ -1,6 +1,6 @@
 links:
-  minelist: https://minelist.kr/servers/your-server-id
-  minepage: https://mine.page/servers/your-server-id
+  minelist: https://minelist.kr/servers/16673-sarisam.kr
+  minepage: 추천하시고 보상 받아가세요 
 announce:
   enabled: true
   interval-seconds: 30
@@ -36,7 +36,7 @@ rewards:
     minepage: []
 vote-reward:
   command-enabled: true
-  command: '캐시 지급 {player} 100'
+  command: '캐시 지급 {player} 50'
 monthly-reward:
   enabled: true
   reset-cumulative: true
