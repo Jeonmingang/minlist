@@ -1,7 +1,7 @@
 name: UltimateVotePlus
 main: com.minkang.ultimate.voteplus.UltimateVotePlus
-version: 1.3.2-patched1
-api-version: 1.16-patched1
+version: 1.3.5
+api-version: 1.16
 authors:
 - Mingang
 softdepend:
