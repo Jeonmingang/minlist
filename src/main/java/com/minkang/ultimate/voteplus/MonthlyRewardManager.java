@@ -79,7 +79,6 @@ public class MonthlyRewardManager {
     }
 
     private void checkMonthly() {
-        purgeOldMonths(plugin.getConfig().getInt("monthly-reward.keep-months", 12));
         if (!plugin.getConfig().getBoolean("monthly-reward.enabled", true)) return;
         YearMonth now = YearMonth.now(zoneId);
         YearMonth prev = now.minusMonths(1);

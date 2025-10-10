@@ -30,7 +30,6 @@ import java.lang.reflect.Method;
 import java.util.*;
 
 public class UltimateVotePlus extends JavaPlugin implements Listener {
-    private final java.util.Map<String, Long> voteDebounce = new java.util.HashMap<>();
     private MonthlyRewardManager monthly;
     private AutoNoticeManager autoNoticeManager;
 
@@ -133,12 +132,6 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
             log("&aVotifierEvent listener hooked.");
         } catch (ClassNotFoundException e) {
             log("&eNuVotifier가 감지되지 않았습니다. 투표 수신 불가.");
-            // Notify ops in-game once
-            Bukkit.getScheduler().runTask(this, () -> {
-                for (org.bukkit.entity.Player op : Bukkit.getOnlinePlayers()) {
-                    if (op.isOp()) op.sendMessage(color("&e[추천] NuVotifier가 설치되지 않아 추천 수신이 불가합니다."));
-                }
-            });
         }
     }
 
@@ -147,16 +140,6 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
         String service = (serviceRaw == null ? "" : serviceRaw.toLowerCase(Locale.ROOT));
 
         ServiceType type = ServiceType.fromServiceName(service);
-        // Debounce duplicate votes
-        int debounceSec = getConfig().getInt("reward.debounce-seconds", 10);
-        String k = playerName.toLowerCase(java.util.Locale.ROOT)+":"+type.name();
-        long now = System.currentTimeMillis();
-        Long last = voteDebounce.get(k);
-        if (debounceSec > 0 && last != null && (now - last) < debounceSec*1000L) {
-            log("&7Debounced duplicate vote: "+k+" ("+(now-last)+"ms)");
-            return;
-        }
-        voteDebounce.put(k, now);
         List<ItemStack> rewards = getConfiguredRewards(type);
 
         Player target = Bukkit.getPlayerExact(playerName);
@@ -377,23 +360,12 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        String __lbl = label==null?"":label.toLowerCase(java.util.Locale.ROOT);
-        String __cmd = command.getName();
-        if (!(__cmd.equals("마인리스트") || __cmd.equals("추첨") || __lbl.equals("마인리스트") || __lbl.equals("추첨") || __lbl.equals("vote") || __lbl.equals("추천"))) return false;
-        
+        if (!command.getName().equals("마인리스트")) return false;
         if (args.length == 0) {
             String minelist = getConfig().getString("links.minelist", "https://minelist.kr/");
             String minepage = getConfig().getString("links.minepage", "https://mine.page/");
-            java.util.List<String> lines = getConfig().getStringList("link-message");
-            if (lines == null || lines.isEmpty()) {
-                sender.sendMessage(color("&a[추천 링크]&f 마인리스트: &e" + minelist));
-                sender.sendMessage(color("&a[추천 링크]&f 마인페이지: &b" + minepage));
-            } else {
-                for (String line : lines) {
-                    String out = line.replace("{minelist}", minelist).replace("{minepage}", minepage);
-                    sender.sendMessage(color(out));
-                }
-            }
+            sender.sendMessage(color("&a[추천 링크]&f 마인리스트: &e" + minelist));
+            sender.sendMessage(color("&a[추천 링크]&f 마인페이지: &b" + minepage));
             return true;
         }
         if ("설정".equalsIgnoreCase(args[0])) {
@@ -404,7 +376,6 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
         } else if ("리로드".equalsIgnoreCase(args[0])) {
             if (!sender.hasPermission("uvp.admin")) { sender.sendMessage(color("&c권한이 없습니다. (uvp.admin)")); return true; }
             reloadConfig();
-            if (this.autoNoticeManager != null) { this.autoNoticeManager.load(); this.autoNoticeManager.start(); }
             if (taskId != -1) { Bukkit.getScheduler().cancelTask(taskId); taskId = -1; }
             startAnnounceTask();
             sender.sendMessage(color("&a설정을 리로드하고 알림 태스크를 재시작했습니다."));
