@@ -4,7 +4,7 @@ links:
 announce:
   enabled: true
   interval-seconds: 30
-  message: '&a[알림]&f 마인리스트/마인페이지 추천 부탁드립니다! &e{minelist}&f / &b{minepage}'
+  message: '&a[알림]&f 마인리스트 추천 부탁드립니다! &e{minelist}&f / &b{minepage}'
 reward:
   queue-offline: true
   allow-fuzzy-online-lookup: true
@@ -37,7 +37,7 @@ rewards:
 vote-reward:
   debounce-seconds: 10
   command-enabled: true
-  command: '캐시 지급 {player} 100'
+  command: '캐시 지급 {player} 50'
 monthly-reward:
   keep-months: 12
   enabled: true
