@@ -376,7 +376,7 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!command.getName().equals("마인리스트")) return false;
+        if (!(command.getName().equals("마인리스트") || command.getName().equals("추천"))) return false;
 
         if (args.length == 0) {
             String minelist = getConfig().getString("links.minelist", "https://minelist.kr/");
