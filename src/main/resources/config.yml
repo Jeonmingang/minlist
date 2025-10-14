@@ -10,7 +10,7 @@ reward:
   allow-fuzzy-online-lookup: true
 broadcast-on-reward:
   enabled: true
-  message: '&a[추천]&f {player} 님이 &e{site}&f 추천 완료! &7[ 누적 추천수 {count_total} ]'
+  message: '&a[추천]&f {player} 님이 &e{site}&f 추천 완료! &7[ 누적 추천수 {count_total} ] &7| &6마인리스트 매달 최다 추천 1위에게 &f1만 캐시 지급'
 debug:
   log: true
 rewards:

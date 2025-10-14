@@ -397,6 +397,7 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
             }
             entries.sort((a,b) -> Integer.compare(b.getValue(), a.getValue()));
             sender.sendMessage(color("&e[추천 랭킹]&7 상위 10명"));
+            sender.sendMessage(color("&7[마인리스트 초기화까지 남은시간] &f" + getTimeLeftToMonthReset()));
             int n = 1;
             for (java.util.Map.Entry<String, Integer> e : entries) {
                 String name = e.getKey();
