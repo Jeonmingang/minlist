@@ -181,7 +181,7 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
                 // Try to extract {amount} from the configured console command as a convenience
                 String amount = "50";
                 try {
-                    java.util.regex.Matcher m = java.util.regex.Pattern.compile("(\d+)").matcher(cmd);
+                    java.util.regex.Matcher m = java.util.regex.Pattern.compile("(\\d+)").matcher(cmd);
                     String last = null;
                     while (m.find()) last = m.group(1);
                     if (last != null) amount = last;
@@ -377,16 +377,14 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!command.getName().equals("마인리스트")) return false;
+
         if (args.length == 0) {
             String minelist = getConfig().getString("links.minelist", "https://minelist.kr/");
             String minepage = getConfig().getString("links.minepage", "https://mine.page/");
             sender.sendMessage(color("&a[추천 링크]&f 마인리스트: &e" + minelist));
             sender.sendMessage(color("&a[추천 링크]&f 마인페이지: &b" + minepage));
             return true;
-        }
-        
         } else if ("랭킹".equalsIgnoreCase(args[0]) || "순위".equalsIgnoreCase(args[0])) {
-            // /마인리스트 랭킹  — 상위 10명 표시
             org.bukkit.configuration.ConfigurationSection sec = stats.getConfigurationSection("byPlayer");
             if (sec == null || sec.getKeys(false).isEmpty()) {
                 sender.sendMessage(color("&e[추천 랭킹]&f 데이터가 아직 없습니다."));
@@ -407,15 +405,15 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
                 if (++n > 10) break;
             }
             return true;
-if ("설정".equalsIgnoreCase(args[0])) {
-            if (!(sender instanceof Player)) { sender.sendMessage(color("&c게임 내에서만 사용 가능합니다.")); return true; }
-            Player p = (Player) sender;
+        } else if ("설정".equalsIgnoreCase(args[0])) {
+            if (!(sender instanceof org.bukkit.entity.Player)) { sender.sendMessage(color("&c게임 내에서만 사용 가능합니다.")); return true; }
+            org.bukkit.entity.Player p = (org.bukkit.entity.Player) sender;
             if (!p.hasPermission("uvp.admin")) { p.sendMessage(color("&c권한이 없습니다. (uvp.admin)")); return true; }
             openGui(p); return true;
         } else if ("리로드".equalsIgnoreCase(args[0])) {
             if (!sender.hasPermission("uvp.admin")) { sender.sendMessage(color("&c권한이 없습니다. (uvp.admin)")); return true; }
             reloadConfig();
-            if (taskId != -1) { Bukkit.getScheduler().cancelTask(taskId); taskId = -1; }
+            if (taskId != -1) { org.bukkit.Bukkit.getScheduler().cancelTask(taskId); taskId = -1; }
             startAnnounceTask();
             sender.sendMessage(color("&a설정을 리로드하고 알림 태스크를 재시작했습니다."));
             return true;
