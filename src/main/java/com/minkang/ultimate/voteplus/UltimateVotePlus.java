@@ -175,13 +175,13 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
         
         // Per-vote cash reward via console command
         if (getConfig().getBoolean("vote-reward.command-enabled", true)) {
-            String cmd = getConfig().getString("vote-reward.command", "캐시 지급 {player} 100")
+            String cmd = getConfig().getString("vote-reward.command", "캐시 지급 {player} 50")
                     .replace("{player}", playerName)
                     .replace("{site}", type.display);
             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
             // Direct message to the voter about the cash reward
             if (target != null) {
-                String defMsg = "&a[추천]&f 추천 보상으로 &e{amount} 캐시&f가 지급되었습니다.";
+                String defMsg = "&a[추천]&f 추천 보상으로 &e{amount} 캐시&f가 지급되었습니다!.";
                 String pm = getConfig().getString("vote-reward.player-message", defMsg);
                 // Try to extract {amount} from the configured console command as a convenience
                 String amount = "50";
