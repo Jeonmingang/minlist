@@ -44,10 +44,15 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
     @Override
     public void onEnable() {
         saveDefaultConfig();
+        // Ensure autonotice.yml exists on first run
+        if (!new java.io.File(getDataFolder(), "autonotice.yml").exists()) {
+            try { getDataFolder().mkdirs(); saveResource("autonotice.yml", false); } catch (Exception ignored) {}
+        }
         // Auto notice wiring
         this.autoNoticeManager = new AutoNoticeManager(this);
         this.autoNoticeManager.load();
         this.autoNoticeManager.start();
+        getLogger().info("[AutoNotice] enabled=" + this.autoNoticeManager.isEnabled() + ", messages=" + this.autoNoticeManager.getMessages().size());
         setupFiles();
         getServer().getPluginManager().registerEvents(this, this);
         // Register /자동공지 command
@@ -64,7 +69,7 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
 
     @Override
     public void onDisable() {
-        if (autoNoticeManager != null) autoNoticeManager.stop();
+        if (autoNoticeManager != null) { autoNoticeManager.stop(); autoNoticeManager.save(); }
         if (taskId != -1) {
             Bukkit.getScheduler().cancelTask(taskId);
             taskId = -1;
