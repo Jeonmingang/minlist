@@ -2,7 +2,7 @@ links:
   minelist: https://minelist.kr/servers/16673-sarisam.kr
   minepage: 추천하시고 보상 받아가세요 
 announce:
-  enabled: true
+  enabled: false
   interval-seconds: 30
   message: '&a[알림]&f 마인리스트/마인페이지 추천 부탁드립니다! &e{minelist}&f / &b{minepage}'
 reward:
@@ -37,6 +37,7 @@ rewards:
 vote-reward:
   command-enabled: true
   command: '캐시 지급 {player} 50'
+  player-message: '&a[추천]&f 추천 보상으로 &e{amount} 캐시&f가 지급되었습니다.'
 monthly-reward:
   enabled: true
   reset-cumulative: true

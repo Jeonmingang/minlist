@@ -105,6 +105,8 @@ public class AutoNoticeCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+        if (!sender.hasPermission("uvp.admin")) { return java.util.Collections.emptyList(); }
+
         if (args.length == 1) {
             return Arrays.asList("목록","추가","삭제","시간","기본시간","켜기","끄기");
         }

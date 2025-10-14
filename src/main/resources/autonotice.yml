@@ -1,4 +1,4 @@
-enabled: true
+enabled: false
 interval-seconds: 60
 messages:
   1: "&a[공지]&f 디스코드 참여: &bdiscord.gg/yourcode"

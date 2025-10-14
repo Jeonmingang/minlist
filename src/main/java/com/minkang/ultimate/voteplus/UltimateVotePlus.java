@@ -174,6 +174,22 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
                     .replace("{player}", playerName)
                     .replace("{site}", type.display);
             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
+            // Direct message to the voter about the cash reward
+            if (target != null) {
+                String defMsg = "&a[추천]&f 추천 보상으로 &e{amount} 캐시&f가 지급되었습니다.";
+                String pm = getConfig().getString("vote-reward.player-message", defMsg);
+                // Try to extract {amount} from the configured console command as a convenience
+                String amount = "50";
+                try {
+                    java.util.regex.Matcher m = java.util.regex.Pattern.compile("(\d+)").matcher(cmd);
+                    String last = null;
+                    while (m.find()) last = m.group(1);
+                    if (last != null) amount = last;
+                } catch (Exception ignored) {}
+                pm = pm.replace("{amount}", amount).replace("{site}", type.display);
+                target.sendMessage(color(pm));
+            }
+
         }
         // countdown message to player
         if (target != null && getConfig().getBoolean("reset-countdown.enabled", true)) {
@@ -368,7 +384,30 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
             sender.sendMessage(color("&a[추천 링크]&f 마인페이지: &b" + minepage));
             return true;
         }
-        if ("설정".equalsIgnoreCase(args[0])) {
+        
+        } else if ("랭킹".equalsIgnoreCase(args[0]) || "순위".equalsIgnoreCase(args[0])) {
+            // /마인리스트 랭킹  — 상위 10명 표시
+            org.bukkit.configuration.ConfigurationSection sec = stats.getConfigurationSection("byPlayer");
+            if (sec == null || sec.getKeys(false).isEmpty()) {
+                sender.sendMessage(color("&e[추천 랭킹]&f 데이터가 아직 없습니다."));
+                return true;
+            }
+            java.util.List<java.util.Map.Entry<String, Integer>> entries = new java.util.ArrayList<>();
+            for (String k : sec.getKeys(false)) {
+                int c = stats.getInt("byPlayer." + k, 0);
+                entries.add(new java.util.AbstractMap.SimpleEntry<>(k, c));
+            }
+            entries.sort((a,b) -> Integer.compare(b.getValue(), a.getValue()));
+            sender.sendMessage(color("&e[추천 랭킹]&7 상위 10명"));
+            int n = 1;
+            for (java.util.Map.Entry<String, Integer> e : entries) {
+                String name = e.getKey();
+                int cnt = e.getValue();
+                sender.sendMessage(color("&6#" + n + " &f" + name + " &7- &e" + cnt + "회"));
+                if (++n > 10) break;
+            }
+            return true;
+if ("설정".equalsIgnoreCase(args[0])) {
             if (!(sender instanceof Player)) { sender.sendMessage(color("&c게임 내에서만 사용 가능합니다.")); return true; }
             Player p = (Player) sender;
             if (!p.hasPermission("uvp.admin")) { p.sendMessage(color("&c권한이 없습니다. (uvp.admin)")); return true; }
