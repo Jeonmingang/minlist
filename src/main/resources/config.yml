@@ -1,6 +1,6 @@
 links:
-  minelist: https://minelist.kr/servers/16673-sarisam.kr
-  minepage: 추천하시고 보상 받아가세요 캐시 및 추천코인 지급
+  minelist: 'https://minelist.kr/servers/16673-sarisam.kr'
+  minepage: '추천하시고 보상 받아가세요 캐시 및 추천코인 지급'
 announce:
   enabled: false
   interval-seconds: 30
@@ -10,7 +10,8 @@ reward:
   allow-fuzzy-online-lookup: true
 broadcast-on-reward:
   enabled: true
-  message: '&a[추천]&f {player} 님이 &e{site}&f 추천 완료! &7[ 누적 추천수 {count_total} ] &7| &6마인리스트 매달 최다 추천 1위에게 &f1만 캐시 지급'
+  message: '&a[추천]&f {player} 님이 &e{site}&f 추천 완료! &7[ 누적 추천수 {count_total} ] &7|
+    &6마인리스트 매달 최다 추천 1위에게 &f1만 캐시 지급'
 debug:
   log: true
 rewards:
@@ -42,10 +43,9 @@ monthly-reward:
   enabled: true
   reset-cumulative: true
   timezone: Asia/Seoul
-  command: 캐시 지급 {player} 10000
+  command: '캐시 지급 {player} 10000'
   broadcast: '&e[추천] 지난달 1위 {player} ({count}회) — 10,000 캐시 지급!'
   tie-breaker: earliest
-
 reset-countdown:
   enabled: true
   message: '&7[마인리스트 초기화까지 남은시간] &f{time}'
