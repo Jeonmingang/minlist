@@ -288,14 +288,14 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
     private void broadcastWithPreviewButton(String legacyMessage) {
         String msg = color(legacyMessage);
         BaseComponent[] base = TextComponent.fromLegacyText(msg);
-        TextComponent button = new TextComponent(ChatColor.GRAY + " [ " + ChatColor.YELLOW + "보상보기" + ChatColor.GRAY + " ]");
-        button.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/마인리스트 보상보기"));
+        TextComponent button = new TextComponent(ChatColor.GRAY + " [ " + ChatColor.YELLOW + "보상 보기 클릭" + ChatColor.GRAY + " ]");
+        button.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/마인리스트 보상 보기 클릭"));
         button.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(ChatColor.YELLOW + "클릭하여 보상 미리보기").create()));
         for (Player p : Bukkit.getOnlinePlayers()) {
             p.spigot().sendMessage(new ComponentBuilder().append(base).append(" ").append(button).create());
         }
         // 콘솔 출력도 남김
-        Bukkit.getConsoleSender().sendMessage(ChatColor.stripColor(msg) + " [보상보기: /마인리스트 보상보기]");
+        Bukkit.getConsoleSender().sendMessage(ChatColor.stripColor(msg) + " [보상 보기 클릭: /마인리스트 보상 보기 클릭]");
     }
 
 
@@ -439,12 +439,22 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
         if (!(command.getName().equals("마인리스트") || command.getName().equals("추천"))) return false;
 
         if (args.length == 0) {
+
             String minelist = getConfig().getString("links.minelist", "https://minelist.kr/");
             String minepage = getConfig().getString("links.minepage", "https://mine.page/");
             sender.sendMessage(color("&a[추천 링크]&f 마인리스트: &e" + minelist));
             sender.sendMessage(color("&a[추천 링크]&f 마인페이지: &b" + minepage));
+            
+            if (sender instanceof org.bukkit.entity.Player) {
+                org.bukkit.entity.Player p = (org.bukkit.entity.Player) sender;
+                net.md_5.bungee.api.chat.TextComponent button = new net.md_5.bungee.api.chat.TextComponent(org.bukkit.ChatColor.GRAY + " [ " + org.bukkit.ChatColor.YELLOW + "보상 보기 클릭" + org.bukkit.ChatColor.GRAY + " ]");
+                button.setClickEvent(new net.md_5.bungee.api.chat.ClickEvent(net.md_5.bungee.api.chat.ClickEvent.Action.RUN_COMMAND, "/마인리스트 보상보기"));
+                button.setHoverEvent(new net.md_5.bungee.api.chat.HoverEvent(net.md_5.bungee.api.chat.HoverEvent.Action.SHOW_TEXT, new net.md_5.bungee.api.chat.ComponentBuilder(org.bukkit.ChatColor.YELLOW + "클릭하여 보상 미리보기").create()));
+                p.spigot().sendMessage(new net.md_5.bungee.api.chat.ComponentBuilder().append(button).create());
+            }
+    
             return true;
-        } else if ("보상".equalsIgnoreCase(args[0]) || "보상보기".equalsIgnoreCase(args[0]) || "보상미리보기".equalsIgnoreCase(args[0])) {
+        } else if ("보상".equalsIgnoreCase(args[0]) || "보상 보기 클릭".equalsIgnoreCase(args[0]) || "보상미리보기".equalsIgnoreCase(args[0])) {
             if (!(sender instanceof org.bukkit.entity.Player)) { sender.sendMessage(color("&c게임 내에서만 사용 가능합니다.")); return true; }
             org.bukkit.entity.Player p = (org.bukkit.entity.Player) sender;
             openPreview(p);

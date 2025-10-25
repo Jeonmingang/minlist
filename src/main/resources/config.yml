@@ -4,7 +4,7 @@ links:
 announce:
   enabled: false
   interval-seconds: 30
-  message: '&a[알림]&f 마인리스트/마인페이지 추천 부탁드립니다! &e{minelist}&f / &b{minepage}'
+  message: '&a[알림]&f 마인리스트 추천 부탁드립니다!'
 reward:
   queue-offline: true
   allow-fuzzy-online-lookup: true
