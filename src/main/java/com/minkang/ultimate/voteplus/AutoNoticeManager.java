@@ -5,6 +5,13 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.entity.Player;
+import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.BaseComponent;
+
 
 import java.io.File;
 import java.io.IOException;
@@ -130,7 +137,14 @@ public class AutoNoticeManager {
             final String msg = ChatColor.translateAlternateColorCodes('&', e.getValue());
             final int sec = getIntervalSeconds(id);
             int tid = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, () -> {
-                Bukkit.broadcastMessage(msg);
+                for (Player p : Bukkit.getOnlinePlayers()) {
+                    BaseComponent[] base = TextComponent.fromLegacyText(msg);
+                    TextComponent button = new TextComponent(ChatColor.GRAY + " [ " + ChatColor.YELLOW + "보상보기" + ChatColor.GRAY + " ]");
+                    button.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/마인리스트 보상보기"));
+                    button.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(ChatColor.YELLOW + "클릭하여 보상 미리보기").create()));
+                    p.spigot().sendMessage(new ComponentBuilder().append(base).append(" ").append(button).create());
+                }
+                Bukkit.getConsoleSender().sendMessage(ChatColor.stripColor(msg) + " [보상보기: /마인리스트 보상보기]");
             }, 20L * 5, 20L * sec); // 5초 후 시작
             runningTasks.put(id, tid);
         }

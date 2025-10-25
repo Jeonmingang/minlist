@@ -1,6 +1,6 @@
 name: UltimateVotePlus
 main: com.minkang.ultimate.voteplus.UltimateVotePlus
-version: 1.6.1
+version: 1.6.2
 api-version: 1.16
 authors:
   - Mingang
@@ -9,7 +9,7 @@ softdepend:
 commands:
   마인리스트:
     description: "추천 링크 안내 및 관리"
-    usage: "/마인리스트 [랭킹]|설정|리로드|테스트"
+    usage: "/마인리스트 [랭킹]|설정|리로드|테스트|보상보기"
   추천:
     description: "추천 링크 안내 (마인리스트 별칭과 동일 기능)"
     usage: "/추천 [랭킹]"

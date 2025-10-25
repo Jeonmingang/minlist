@@ -14,6 +14,14 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+
+import org.bukkit.event.inventory.InventoryDragEvent;
+import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.BaseComponent;
+
 import java.time.*;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -40,6 +48,7 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
     private org.bukkit.configuration.file.YamlConfiguration queue, stats;
 
     private static final String GUI_TITLE = ChatColor.GREEN + "추천 보상 설정 (마인리스트/마인페이지)";
+    private static final String PREVIEW_TITLE = ChatColor.YELLOW + "추천 보상 미리보기";
 
     @Override
     public void onEnable() {
@@ -104,7 +113,7 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
 
         taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> {
             String out = msg.replace("{minelist}", minelist).replace("{minepage}", minepage);
-            Bukkit.broadcastMessage(color(out));
+            broadcastWithPreviewButton(out);
         }, 20L, seconds * 20L);
     }
 
@@ -218,7 +227,7 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
                         .replace("{count_total}", String.valueOf(total))
                         .replace("{count_minelist}", String.valueOf(ml))
                         .replace("{count_minepage}", String.valueOf(mp));
-        Bukkit.broadcastMessage(color(out));
+        broadcastWithPreviewButton(out);
     }
 
     private void incrementStats(String playerName, ServiceType type) {
@@ -276,6 +285,20 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
 
     private String color(String s){ return ChatColor.translateAlternateColorCodes('&', s); }
 
+    private void broadcastWithPreviewButton(String legacyMessage) {
+        String msg = color(legacyMessage);
+        BaseComponent[] base = TextComponent.fromLegacyText(msg);
+        TextComponent button = new TextComponent(ChatColor.GRAY + " [ " + ChatColor.YELLOW + "보상보기" + ChatColor.GRAY + " ]");
+        button.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/마인리스트 보상보기"));
+        button.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(ChatColor.YELLOW + "클릭하여 보상 미리보기").create()));
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            p.spigot().sendMessage(new ComponentBuilder().append(base).append(" ").append(button).create());
+        }
+        // 콘솔 출력도 남김
+        Bukkit.getConsoleSender().sendMessage(ChatColor.stripColor(msg) + " [보상보기: /마인리스트 보상보기]");
+    }
+
+
     // ---------- GUI ----------
     private void openGui(Player p) {
         gui = Bukkit.createInventory(p, 54, GUI_TITLE);
@@ -288,6 +311,23 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
         List<Integer> mpSlots = cfg.getIntegerList("rewards.slots.minepage");
         for (int i = 0; i < mp.size() && i < mpSlots.size(); i++) gui.setItem(mpSlots.get(i), mp.get(i));
         p.openInventory(gui);
+    }
+
+    private void openPreview(Player p) {
+        Inventory inv = Bukkit.createInventory(p, 54, PREVIEW_TITLE);
+        // 장식과 안내
+        inv.setItem(4, makeItem(Material.EMERALD_BLOCK, "&a마인리스트 보상", "&7보기 전용"));
+        inv.setItem(22, makeItem(Material.LAPIS_BLOCK, "&b마인페이지 보상", "&7보기 전용"));
+        ItemStack pane = makeItem(Material.GRAY_STAINED_GLASS_PANE, "&7", "");
+        for (int i = 0; i < 54; i++) if (inv.getItem(i) == null) inv.setItem(i, pane);
+        FileConfiguration cfg = getConfig();
+        List<ItemStack> ml = ItemSerializer.deserializeList(cfg.getStringList("rewards.data.minelist"));
+        List<Integer> mlSlots = cfg.getIntegerList("rewards.slots.minelist");
+        for (int i = 0; i < ml.size() && i < mlSlots.size(); i++) inv.setItem(mlSlots.get(i), ml.get(i).clone());
+        List<ItemStack> mp = ItemSerializer.deserializeList(cfg.getStringList("rewards.data.minepage"));
+        List<Integer> mpSlots = cfg.getIntegerList("rewards.slots.minepage");
+        for (int i = 0; i < mp.size() && i < mpSlots.size(); i++) inv.setItem(mpSlots.get(i), mp.get(i).clone());
+        p.openInventory(inv);
     }
 
     private void decorate() {
@@ -356,6 +396,21 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
         // 수동 저장만 허용
     }
 
+    
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onPreviewClick(org.bukkit.event.inventory.InventoryClickEvent e) {
+        if (e.getView() == null || e.getView().getTitle() == null) return;
+        if (!e.getView().getTitle().equals(PREVIEW_TITLE)) return;
+        e.setCancelled(true); // 보기 전용
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onPreviewDrag(InventoryDragEvent e) {
+        if (e.getView() == null || e.getView().getTitle() == null) return;
+        if (!e.getView().getTitle().equals(PREVIEW_TITLE)) return;
+        e.setCancelled(true); // 보기 전용
+    }
+
     private void saveGui() {
         FileConfiguration cfg = getConfig();
         List<Integer> mlSlots = cfg.getIntegerList("rewards.slots.minelist");
@@ -388,6 +443,11 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
             String minepage = getConfig().getString("links.minepage", "https://mine.page/");
             sender.sendMessage(color("&a[추천 링크]&f 마인리스트: &e" + minelist));
             sender.sendMessage(color("&a[추천 링크]&f 마인페이지: &b" + minepage));
+            return true;
+        } else if ("보상".equalsIgnoreCase(args[0]) || "보상보기".equalsIgnoreCase(args[0]) || "보상미리보기".equalsIgnoreCase(args[0])) {
+            if (!(sender instanceof org.bukkit.entity.Player)) { sender.sendMessage(color("&c게임 내에서만 사용 가능합니다.")); return true; }
+            org.bukkit.entity.Player p = (org.bukkit.entity.Player) sender;
+            openPreview(p);
             return true;
         } else if ("랭킹".equalsIgnoreCase(args[0]) || "순위".equalsIgnoreCase(args[0])) {
             org.bukkit.configuration.ConfigurationSection sec = stats.getConfigurationSection("byPlayer");
