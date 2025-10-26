@@ -142,9 +142,9 @@ public class AutoNoticeManager {
                     TextComponent button = new TextComponent(ChatColor.GRAY + " [ " + ChatColor.YELLOW + "보상 보기 클릭" + ChatColor.GRAY + " ]");
                     button.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/마인리스트 보상"));
                     button.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(ChatColor.YELLOW + "클릭하여 보상 미리보기").create()));
-                    p.sendMessage(msg);
+                    p.spigot().sendMessage(new ComponentBuilder().append(TextComponent.fromLegacyText(msg)).append(new TextComponent(" ")).append(button).create());
                 }
-                Bukkit.getConsoleSender().sendMessage(ChatColor.stripColor(msg) + " [보상보기: /마인리스트 보상]");
+                // removed console broadcast of [보상보기] per request
             }, 20L * 5, 20L * sec); // 5초 후 시작
             runningTasks.put(id, tid);
         }

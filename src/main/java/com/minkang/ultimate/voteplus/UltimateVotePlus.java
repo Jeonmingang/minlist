@@ -236,6 +236,19 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
         String key = (type == ServiceType.MINEPAGE ? "minepage" : "minelist"); // UNKNOWN은 minelist로 합산
         stats.set("bySite." + key, stats.getInt("bySite." + key, 0) + 1);
         stats.set("byPlayer." + playerName.toLowerCase(Locale.ROOT), stats.getInt("byPlayer." + playerName.toLowerCase(Locale.ROOT), 0) + 1);
+        
+        // Update last vote date (yyyy-MM-dd) and monthly counter (yyyyMM)
+        try {
+            java.time.ZoneId zone = java.time.ZoneId.systemDefault();
+            java.time.LocalDate today = java.time.LocalDate.now(zone);
+            String todayStr = today.toString(); // yyyy-MM-dd
+            String ym = today.format(java.time.format.DateTimeFormatter.ofPattern("yyyyMM"));
+            String playerKey = playerName.toLowerCase(java.util.Locale.ROOT);
+            stats.set("lastVote." + playerKey, todayStr);
+            String monthlyKey = "monthly." + ym + "." + playerKey;
+            stats.set(monthlyKey, stats.getInt(monthlyKey, 0) + 1);
+        } catch (Throwable t) { /* ignore time errors */ }
+
         saveYaml(stats, statsFile);
     }
 
@@ -443,6 +456,27 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
             String minelist = getConfig().getString("links.minelist", "https://minelist.kr/");
             String minepage = getConfig().getString("links.minepage", "https://mine.page/");
             sender.sendMessage(color("&a[추천 링크]&f 마인리스트: &e" + minelist));
+            // Show today's vote status and monthly count (personal)
+            if (sender instanceof org.bukkit.entity.Player) {
+                String key = ((org.bukkit.entity.Player)sender).getName().toLowerCase(java.util.Locale.ROOT);
+                String todayStr;
+                int monthlyCount;
+                try {
+                    java.time.ZoneId zone = java.time.ZoneId.systemDefault();
+                    java.time.LocalDate today = java.time.LocalDate.now(zone);
+                    todayStr = today.toString();
+                    String ym = today.format(java.time.format.DateTimeFormatter.ofPattern("yyyyMM"));
+                    monthlyCount = stats.getInt("monthly." + ym + "." + key, 0);
+                } catch (Throwable t) {
+                    todayStr = "";
+                    monthlyCount = 0;
+                }
+                boolean votedToday = todayStr.equals(stats.getString("lastVote." + key, ""));
+                sender.sendMessage(color("&f오늘 추천 여부: " + (votedToday ? "&a예" : "&c아니오") + " &7| &f이번달 누적: &e" + monthlyCount + "회"));
+            } else {
+                // Console: don't print the clickable button; keep minimal info
+            }
+
 
             
             if (sender instanceof org.bukkit.entity.Player) {
