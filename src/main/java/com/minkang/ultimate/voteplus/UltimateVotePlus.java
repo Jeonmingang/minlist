@@ -267,7 +267,7 @@ private void maybeBroadcastReward(String pName, ServiceType type) {
                         .replace("{count_minelist}", String.valueOf(ml))
                         .replace("{count_minepage}", String.valueOf(mp));
         String colored = color(out);
-        String[] parts = colored.split("\|", -1);
+        String[] parts = colored.split(java.util.regex.Pattern.quote("|"), -1);
         for (Player p : Bukkit.getOnlinePlayers()) {
             if (parts.length == 0) { p.sendMessage(colored); }
             else if (parts.length == 1) { p.sendMessage(parts[0].trim()); }
