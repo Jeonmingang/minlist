@@ -21,7 +21,8 @@ public class AutoNoticeCommand implements CommandExecutor, TabCompleter {
     private String color(String s) { return ChatColor.translateAlternateColorCodes('&', s); }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args){
+        if (!(command.getName().equals("마인리스트") || command.getName().equals("추천"))) return false;
         if (!sender.hasPermission("uvp.admin")) {
             sender.sendMessage(ChatColor.translateAlternateColorCodes('&',"&c권한이 없습니다. (uvp.admin)"));
             return true;

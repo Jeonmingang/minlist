@@ -1,3 +1,13 @@
 name: UltimateVotePlus
 main: com.minkang.ultimate.voteplus.UltimateVotePlus
-version: 1.8.4
+version: 1.8.5
+
+commands:
+  추천:
+    description: "추천 링크 안내 (마인리스트 별칭과 동일 기능)"
+    usage: "/추천 [랭킹]"
+
+permissions:
+  uvp.admin:
+    description: "추천 관리 명령 권한"
+    default: op
