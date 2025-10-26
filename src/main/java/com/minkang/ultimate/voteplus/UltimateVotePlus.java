@@ -300,9 +300,14 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
 
     private void broadcastWithPreviewButton(String legacyMessage) {
         String msg = color(legacyMessage);
-        for (Player p : Bukkit.getOnlinePlayers()) {
-            p.sendMessage(msg);
+        net.md_5.bungee.api.chat.BaseComponent[] base = net.md_5.bungee.api.chat.TextComponent.fromLegacyText(msg);
+        net.md_5.bungee.api.chat.TextComponent button = new net.md_5.bungee.api.chat.TextComponent(org.bukkit.ChatColor.GRAY + " [ " + org.bukkit.ChatColor.YELLOW + "보상 보기 클릭" + org.bukkit.ChatColor.GRAY + " ]");
+        button.setClickEvent(new net.md_5.bungee.api.chat.ClickEvent(net.md_5.bungee.api.chat.ClickEvent.Action.RUN_COMMAND, "/마인리스트 보상"));
+        button.setHoverEvent(new net.md_5.bungee.api.chat.HoverEvent(net.md_5.bungee.api.chat.HoverEvent.Action.SHOW_TEXT, new net.md_5.bungee.api.chat.ComponentBuilder(org.bukkit.ChatColor.GRAY + "클릭하여 보상 미리보기").create()));
+        for (org.bukkit.entity.Player p : org.bukkit.Bukkit.getOnlinePlayers()) {
+            p.spigot().sendMessage(new net.md_5.bungee.api.chat.ComponentBuilder().append(base).append(" ").append(button).create());
         }
+    }
     }
 
 
