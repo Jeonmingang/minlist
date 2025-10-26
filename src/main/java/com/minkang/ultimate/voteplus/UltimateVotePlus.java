@@ -113,7 +113,7 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
 
         taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> {
             String out = msg.replace("{minelist}", minelist).replace("{minepage}", minepage);
-            broadcastWithPreviewButton(out);
+            for (Player pl : Bukkit.getOnlinePlayers()) { pl.sendMessage(out); }
         }, 20L, seconds * 20L);
     }
 
@@ -227,7 +227,7 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
                         .replace("{count_total}", String.valueOf(total))
                         .replace("{count_minelist}", String.valueOf(ml))
                         .replace("{count_minepage}", String.valueOf(mp));
-        broadcastWithPreviewButton(out);
+        for (Player pl : Bukkit.getOnlinePlayers()) { pl.sendMessage(out); }
     }
 
     private void incrementStats(String playerName, ServiceType type) {
@@ -300,15 +300,9 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
 
     private void broadcastWithPreviewButton(String legacyMessage) {
         String msg = color(legacyMessage);
-        BaseComponent[] base = TextComponent.fromLegacyText(msg);
-        TextComponent button = new TextComponent(ChatColor.GRAY + " [ " + ChatColor.YELLOW + "보상 보기 클릭" + ChatColor.GRAY + " ]");
-        button.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/마인리스트 보상 보기 클릭"));
-        button.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(ChatColor.YELLOW + "클릭하여 보상 미리보기").create()));
         for (Player p : Bukkit.getOnlinePlayers()) {
-            p.spigot().sendMessage(new ComponentBuilder().append(base).append(" ").append(button).create());
+            p.sendMessage(msg);
         }
-        // 콘솔 출력도 남김
-        Bukkit.getConsoleSender().sendMessage(ChatColor.stripColor(msg) + " [보상 보기 클릭: /마인리스트 보상 보기 클릭]");
     }
 
 
@@ -487,6 +481,23 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
     button.setClickEvent(new net.md_5.bungee.api.chat.ClickEvent(net.md_5.bungee.api.chat.ClickEvent.Action.RUN_COMMAND, "/마인리스트 보상"));
     button.setHoverEvent(new net.md_5.bungee.api.chat.HoverEvent(net.md_5.bungee.api.chat.HoverEvent.Action.SHOW_TEXT, new net.md_5.bungee.api.chat.ComponentBuilder(org.bukkit.ChatColor.GRAY + "클릭하여 보상 미리보기").create()));
     p.spigot().sendMessage(new net.md_5.bungee.api.chat.ComponentBuilder().append(prefix).append(button).create());
+                {
+                    String key = p.getName().toLowerCase(java.util.Locale.ROOT);
+                    String todayStr;
+                    int monthlyCount;
+                    try {
+                        java.time.ZoneId zone = java.time.ZoneId.systemDefault();
+                        java.time.LocalDate today = java.time.LocalDate.now(zone);
+                        todayStr = today.toString();
+                        String ym = today.format(java.time.format.DateTimeFormatter.ofPattern("yyyyMM"));
+                        monthlyCount = stats.getInt("monthly." + ym + "." + key, 0);
+                    } catch (Throwable t) {
+                        todayStr = "";
+                        monthlyCount = 0;
+                    }
+                    boolean votedToday = todayStr.equals(stats.getString("lastVote." + key, ""));
+                    p.sendMessage(color("&7오늘 추천 여부: " + (votedToday ? "&a예" : "&c아니오") + " &7| &7이번달 본인 누적: &e" + monthlyCount + "회"));
+                }
 }
     
             return true;
