@@ -124,12 +124,16 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
             for (Player pl : Bukkit.getOnlinePlayers()) {
                 // 1) Line 1: prefix + " &b보상 &f받아가세요"
                 String line1 = prefixText + color(" &b보상 &f받아가세요");
-                pl.spigot().sendMessage(net.md_5.bungee.api.chat.TextComponent.fromLegacyText(line1));
-
+                String _day = java.time.LocalDate.now(java.time.ZoneId.of(getConfig().getString("monthly-reward.timezone","Asia/Seoul")))
+                        .format(java.time.format.DateTimeFormatter.BASIC_ISO_DATE);
+                String _key = pl.getName().toLowerCase(java.util.Locale.ROOT);
+                int _cnt = stats.getInt("daily." + _day + "." + _key, 0);
+                String _badge = org.bukkit.ChatColor.GRAY + "[" + org.bukkit.ChatColor.WHITE + "오늘 누적 추천수 " + _cnt + org.bukkit.ChatColor.GRAY + "]";
+                pl.spigot().sendMessage(net.md_5.bungee.api.chat.TextComponent.fromLegacyText(line1 + " " + _badge));
                 // 2) Line 2: [ 마인리스트 추천 보상 클릭 ] (RUN_COMMAND)
                 net.md_5.bungee.api.chat.TextComponent rewardButton =
                         new net.md_5.bungee.api.chat.TextComponent(
-                                org.bukkit.ChatColor.GRAY + "[" + org.bukkit.ChatColor.YELLOW + "마인리스트 추천 보상 클릭" + org.bukkit.ChatColor.GRAY + "]");
+                                org.bukkit.ChatColor.GRAY + "[" + org.bukkit.ChatColor.YELLOW + "보상보기 클릭" + org.bukkit.ChatColor.GRAY + "]");
                 rewardButton.setClickEvent(new net.md_5.bungee.api.chat.ClickEvent(
                         net.md_5.bungee.api.chat.ClickEvent.Action.RUN_COMMAND, "/마인리스트 보상"));
                 rewardButton.setHoverEvent(new net.md_5.bungee.api.chat.HoverEvent(
@@ -140,7 +144,7 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
                 // 3) Line 3: [ 마인리스트 추천 링크 클릭 ] (OPEN_URL to links.minelist)
                 net.md_5.bungee.api.chat.TextComponent linkButton =
                         new net.md_5.bungee.api.chat.TextComponent(
-                                org.bukkit.ChatColor.GRAY + "[" + org.bukkit.ChatColor.AQUA + "마인리스트 추천 링크 클릭" + org.bukkit.ChatColor.GRAY + "]");
+                                org.bukkit.ChatColor.GRAY + "[" + org.bukkit.ChatColor.AQUA + "추천링크 클릭" + org.bukkit.ChatColor.GRAY + "]");
                 linkButton.setClickEvent(new net.md_5.bungee.api.chat.ClickEvent(
                         net.md_5.bungee.api.chat.ClickEvent.Action.OPEN_URL, url));
                 linkButton.setHoverEvent(new net.md_5.bungee.api.chat.HoverEvent(
@@ -248,21 +252,34 @@ private void hookVotifier() {
         maybeBroadcastReward(playerName, type);
     }
 
-    private void maybeBroadcastReward(String playerName, ServiceType type) {
+    
+private void maybeBroadcastReward(String pName, ServiceType type) {
         if (!getConfig().getBoolean("broadcast-on-reward.enabled", true)) return;
         int total = stats.getInt("total", 0);
         int ml = stats.getInt("bySite.minelist", 0);
         int mp = stats.getInt("bySite.minepage", 0);
-        String siteName = type.display;
+        String siteName = (type != null ? type.display : "");
         String fmt = getConfig().getString("broadcast-on-reward.message",
-                "&a[추천]&f {player} 님이 &e{site}&f 추천 완료! &7[ 누적 추천수 {count_total} ]");
-        String out = fmt.replace("{player}", playerName)
+                "&a[추천]&f {player} 님이 &e{site}&f 추천 완료! &7[ 누적 추천수 {count_total} ] | &6마인리스트 매달 최다 추천 1위에게 &f1만 캐시 지급");
+        String out = fmt.replace("{player}", pName)
                         .replace("{site}", siteName)
                         .replace("{count_total}", String.valueOf(total))
                         .replace("{count_minelist}", String.valueOf(ml))
                         .replace("{count_minepage}", String.valueOf(mp));
-        
+        String colored = color(out);
+        String[] parts = colored.split("\|", -1);
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            if (parts.length == 0) { p.sendMessage(colored); }
+            else if (parts.length == 1) { p.sendMessage(parts[0].trim()); }
+            else {
+                String first = parts[0].trim();
+                String second = parts[1].trim();
+                if (!first.isEmpty()) p.sendMessage(first);
+                if (!second.isEmpty()) p.sendMessage(second);
+            }
+        }
     }
+
 
     private void incrementStats(String playerName, ServiceType type) {
         int total = stats.getInt("total", 0) + 1;
