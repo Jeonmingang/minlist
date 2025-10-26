@@ -102,12 +102,51 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
         saveYaml(stats, statsFile);
     }
 
-    private void startAnnounceTask() {
+    private     void startAnnounceTask() {
         FileConfiguration cfg = getConfig();
         if (!cfg.getBoolean("announce.enabled", true)) return;
         int seconds = Math.max(5, cfg.getInt("announce.interval-seconds", 30));
-        String msg = color(cfg.getString("announce.message",
-                "&a[알림]&f 마인리스트/마인페이지 추천 부탁드립니다! &e{minelist}&f / &b{minepage}"));
+        String legacyPrefix = color(cfg.getString("announce.message",
+                "&a[알림]&f 마인리스트 추천 부탁드립니다"));
+        final String minelist = cfg.getString("links.minelist", "https://minelist.kr/");
+        final String pitch = "추천하시고 보상 받아가세요";
+
+        taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> {
+            for (Player pl : Bukkit.getOnlinePlayers()) {
+                // prefix
+                net.md_5.bungee.api.chat.BaseComponent[] prefix = net.md_5.bungee.api.chat.TextComponent.fromLegacyText(legacyPrefix);
+
+                // [링크] (OPEN_URL)
+                net.md_5.bungee.api.chat.TextComponent link = new net.md_5.bungee.api.chat.TextComponent(org.bukkit.ChatColor.YELLOW + " 링크 ");
+                link.setClickEvent(new net.md_5.bungee.api.chat.ClickEvent(
+                        net.md_5.bungee.api.chat.ClickEvent.Action.OPEN_URL, minelist));
+                link.setHoverEvent(new net.md_5.bungee.api.chat.HoverEvent(
+                        net.md_5.bungee.api.chat.HoverEvent.Action.SHOW_TEXT,
+                        new net.md_5.bungee.api.chat.ComponentBuilder(org.bukkit.ChatColor.GRAY + "클릭하여 마인리스트 열기").create()));
+
+                // " / 추천하시고 보상 받아가세요"
+                net.md_5.bungee.api.chat.BaseComponent[] pitchComp =
+                        net.md_5.bungee.api.chat.TextComponent.fromLegacyText(org.bukkit.ChatColor.WHITE + " / " + org.bukkit.ChatColor.AQUA + pitch + " ");
+
+                // [ 보상보기 클릭 ] (RUN_COMMAND)
+                net.md_5.bungee.api.chat.TextComponent button = new net.md_5.bungee.api.chat.TextComponent(
+                        org.bukkit.ChatColor.GRAY + " [ " + org.bukkit.ChatColor.YELLOW + "보상보기 클릭" + org.bukkit.ChatColor.GRAY + " ]");
+                button.setClickEvent(new net.md_5.bungee.api.chat.ClickEvent(
+                        net.md_5.bungee.api.chat.ClickEvent.Action.RUN_COMMAND, "/마인리스트 보상"));
+                button.setHoverEvent(new net.md_5.bungee.api.chat.HoverEvent(
+                        net.md_5.bungee.api.chat.HoverEvent.Action.SHOW_TEXT,
+                        new net.md_5.bungee.api.chat.ComponentBuilder(org.bukkit.ChatColor.GRAY + "클릭하여 보상 미리보기").create()));
+
+                pl.spigot().sendMessage(new net.md_5.bungee.api.chat.ComponentBuilder()
+                        .append(prefix)
+                        .append(" ")
+                        .append(link)
+                        .append(pitchComp)
+                        .append(button)
+                        .create());
+            }
+        }, 20L, seconds * 20L);
+    }&f / &b{minepage}"));
         String minelist = cfg.getString("links.minelist", "https://minelist.kr/");
         String minepage = cfg.getString("links.minepage", "https://mine.page/");
 

@@ -1,3 +1,18 @@
+# UltimateVotePlus
+
+## v1.7.4
+- **자동공지(/자동공지, autonotice.yml)**에서 나가는 메시지에는 더 이상 **[보상보기 클릭]** 버튼을 붙이지 않습니다. (요청 반영)
+- **config.yml → announce** 방송에는 계속 **[링크] + " / 추천하시고 보상 받아가세요" + [보상보기 클릭]** UI가 붙습니다.
+- 버전 업: plugin.yml / pom.xml → `1.7.4`.
+
+# UltimateVotePlus
+
+## v1.7.3
+- 자동공지(announce)와 /자동공지 메시지에 **[보상보기 클릭]** 버튼을 일괄 추가 (RUN_COMMAND: `/마인리스트 보상`).
+- 자동공지(announce) 메시지에 `링크 / 추천하시고 보상 받아가세요` 문구와 **[링크]** 버튼(OPEN_URL: `links.minelist`)을 함께 출력.
+- 기본 설정값 업데이트: `announce.message` = `&a[알림]&f 마인리스트 추천 부탁드립니다` (나머지 링크/보상보기는 코드에서 자동 부착).
+- 버전 업: plugin.yml / pom.xml -> `1.7.3`.
+
 # UltimateVotePlus v1.2.0
 
 - 보상 미지급 이슈 개선: 플레이어 대소문자 불일치 시 온라인 검색 보완(`allow-fuzzy-online-lookup`), 디버그 로그 추가.
