@@ -456,7 +456,7 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
             String minelist = getConfig().getString("links.minelist", "https://minelist.kr/");
             String minepage = getConfig().getString("links.minepage", "https://mine.page/");
             sender.sendMessage(color("&a[추천 링크]&f 마인리스트: &e" + minelist));
-            // Show today's vote status and monthly count (personal)
+            // (moved below clickable)
             if (sender instanceof org.bukkit.entity.Player) {
                 String key = ((org.bukkit.entity.Player)sender).getName().toLowerCase(java.util.Locale.ROOT);
                 String todayStr;
