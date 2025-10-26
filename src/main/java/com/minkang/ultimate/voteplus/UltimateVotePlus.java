@@ -123,22 +123,16 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
         taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> {
             for (Player pl : Bukkit.getOnlinePlayers()) {
                 // 1) Line 1: prefix + " &b보상 &f받아가세요"
+                
                 String line1 = prefixText + color(" &b보상 &f받아가세요");
-
                 String _day = java.time.LocalDate.now(java.time.ZoneId.of(getConfig().getString("monthly-reward.timezone","Asia/Seoul")))
                         .format(java.time.format.DateTimeFormatter.BASIC_ISO_DATE);
                 String _key = pl.getName().toLowerCase(java.util.Locale.ROOT);
                 int _cnt = stats.getInt("daily." + _day + "." + _key, 0);
-                String _badge = org.bukkit.ChatColor.GRAY + "[ " + org.bukkit.ChatColor.WHITE + "오늘 누적 추천수 " + _cnt + " " + org.bukkit.ChatColor.GRAY + "]";
-                line1 = line1 + " " + _badge;
-            
-                String _day = java.time.LocalDate.now(java.time.ZoneId.of(getConfig().getString("monthly-reward.timezone","Asia/Seoul")))
-                        .format(java.time.format.DateTimeFormatter.BASIC_ISO_DATE);
-                String _key = pl.getName().toLowerCase(java.util.Locale.ROOT);
-                int _cnt = stats.getInt("daily." + _day + "." + _key, 0);
-                String _badge = org.bukkit.ChatColor.GRAY + "[" + org.bukkit.ChatColor.WHITE + "오늘 누적 추천수 " + _cnt + org.bukkit.ChatColor.GRAY + "]";
-                pl.spigot().sendMessage(net.md_5.bungee.api.chat.TextComponent.fromLegacyText(line1 + " " + _badge));
-                // 2) Line 2: [ 마인리스트 추천 보상 클릭 ] (RUN_COMMAND)
+                String _badge = org.jsoup.parser.Parser.unescapeEntities("&7[ &f오늘 누적 추천수 " + _cnt + " &7]", false);
+                // send first line with badge (convert color codes)
+                pl.spigot().sendMessage(net.md_5.bungee.api.chat.TextComponent.fromLegacyText(line1 + " " + color(_badge)));
+// 2) Line 2: [ 마인리스트 추천 보상 클릭 ] (RUN_COMMAND)
                 net.md_5.bungee.api.chat.TextComponent rewardButton =
                         new net.md_5.bungee.api.chat.TextComponent(
                                 org.bukkit.ChatColor.GRAY + "[" + org.bukkit.ChatColor.YELLOW + "보상보기 클릭" + org.bukkit.ChatColor.GRAY + "]");
@@ -418,7 +412,7 @@ private void maybeBroadcastReward(String pName, ServiceType type) {
         for (int s : cfg.getIntegerList("rewards.slots.minepage")) gui.setItem(s, null);
     }
 
-    private ItemStack makeItem(Material mat, String name, String lore) {
+    private ItemStack makeItem(Material mat, String name, String... lore) {
         ItemStack it = new ItemStack(mat);
         ItemMeta meta = it.getItemMeta();
         if (meta != null) {
