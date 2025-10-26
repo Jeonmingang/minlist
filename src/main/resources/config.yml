@@ -1,7 +1,10 @@
 links:
   minelist: 'https://minelist.kr/servers/16673-sarisam.kr'
   minepage: '추천하시고 보상 받아가세요 캐시 및 추천코인 지급'
-\1'&a[알림]&f 마인리스트 추천 부탁드립니다'
+announce:
+  enabled: false
+  interval-seconds: 30
+  message: '&a[알림]&f 마인리스트 추천 부탁드립니다'
 reward:
   queue-offline: true
   allow-fuzzy-online-lookup: true
