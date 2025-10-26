@@ -300,6 +300,11 @@ private void maybeBroadcastReward(String pName, ServiceType type) {
             stats.set("lastVote." + playerKey, todayStr);
             String monthlyKey = "monthly." + ym + "." + playerKey;
             stats.set(monthlyKey, stats.getInt(monthlyKey, 0) + 1);
+            // daily counter (YYYYMMDD)
+            String dayKey = today.format(java.time.format.DateTimeFormatter.BASIC_ISO_DATE);
+            String dailyKey = "daily." + dayKey + "." + playerKey;
+            stats.set(dailyKey, stats.getInt(dailyKey, 0) + 1);
+
         } catch (Throwable t) { /* ignore time errors */ }
 
         saveYaml(stats, statsFile);
