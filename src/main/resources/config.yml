@@ -10,11 +10,11 @@ links:
 announce:
   # true 로 두면 주기적으로 아래 메시지를 방송합니다.
   # /마인리스트 공지 <초> 로 interval-seconds를 게임 내에서 즉시 변경할 수 있습니다.
-  enabled: false
-  interval-seconds: 30
+  enabled: true
+  interval-seconds: 120
   # 1번째 줄에 그대로 출력됩니다. 플러그인이 자동으로 뒤에 " &b보상 &f받아가세요" 를 붙이고,
   # 2번째 줄에 [ 보상보기 클릭 ], 3번째 줄에 [ 추천링크 클릭 ] 버튼을 추가합니다.
-  message: '&a[알림]&f 마인리스트 추천 부탁드립니다!'
+  message: '&a[ 알림 ]&f 마인리스트 추천 부탁드립니다!'
 
 reward:
   # 오프라인 유저는 큐에 적립 후 접속 시 일괄 지급
@@ -24,7 +24,7 @@ reward:
 
 broadcast-on-reward:
   enabled: true
-  message: "&a[추천]&f {player} 님이 &e{site}&f 추천 완료! &7[ 누적 추천수 {count_total} ] &7| &6마인리스트 매달 최다 추천 1위에게 &f1만 캐시 지급"
+  message: "&a[ 추천 ]&f {player} 님이 &e{site}&f 추천 완료! &7[ 누적 추천수 {count_total} ] &7| &f마인리스트 매달 최다 추천 &b1위&f에게 &f1만 캐시 지급"
 
 debug:
   log: true
