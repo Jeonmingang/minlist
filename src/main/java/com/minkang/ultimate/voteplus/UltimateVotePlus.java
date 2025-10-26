@@ -135,7 +135,7 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
 // 2) Line 2: [ 마인리스트 추천 보상 클릭 ] (RUN_COMMAND)
                 net.md_5.bungee.api.chat.TextComponent rewardButton =
                         new net.md_5.bungee.api.chat.TextComponent(
-                                org.bukkit.ChatColor.GRAY + "[" + org.bukkit.ChatColor.YELLOW + "보상보기 클릭" + org.bukkit.ChatColor.GRAY + "]");
+                                org.bukkit.ChatColor.GRAY + "[" + org.bukkit.ChatColor.YELLOW + "마인리스트 추천 보상 클릭" + org.bukkit.ChatColor.GRAY + "]");
                 rewardButton.setClickEvent(new net.md_5.bungee.api.chat.ClickEvent(
                         net.md_5.bungee.api.chat.ClickEvent.Action.RUN_COMMAND, "/마인리스트 보상"));
                 rewardButton.setHoverEvent(new net.md_5.bungee.api.chat.HoverEvent(
@@ -146,7 +146,7 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
                 // 3) Line 3: [ 마인리스트 추천 링크 클릭 ] (OPEN_URL to links.minelist)
                 net.md_5.bungee.api.chat.TextComponent linkButton =
                         new net.md_5.bungee.api.chat.TextComponent(
-                                org.bukkit.ChatColor.GRAY + "[" + org.bukkit.ChatColor.AQUA + "추천링크 클릭" + org.bukkit.ChatColor.GRAY + "]");
+                                org.bukkit.ChatColor.GRAY + "[" + org.bukkit.ChatColor.AQUA + "마인리스트 추천 링크 클릭" + org.bukkit.ChatColor.GRAY + "]");
                 linkButton.setClickEvent(new net.md_5.bungee.api.chat.ClickEvent(
                         net.md_5.bungee.api.chat.ClickEvent.Action.OPEN_URL, url));
                 linkButton.setHoverEvent(new net.md_5.bungee.api.chat.HoverEvent(
