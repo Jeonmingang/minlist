@@ -1,5 +1,15 @@
 # UltimateVotePlus
 
+## v1.7.6
+- Announce 방송을 3줄로 분리:
+  1) `[알림] 마인리스트 추천 부탁드립니다! &b보상 &f받아가세요`
+  2) `&7[ &e보상보기 클릭 &7]` (RUN_COMMAND: `/마인리스트 보상`)
+  3) `&7[ &b추천링크 클릭 &7]` (OPEN_URL: `links.minelist`)
+- 랭킹 월별 초기화: 매달 변경 감지 시 `byPlayer`/`bySite` 누적 랭킹 자동 초기화 (기본 타임존: `monthly-reward.timezone`).
+- `links.minelist`는 `config.yml`에서 수정 가능.
+
+# UltimateVotePlus
+
 ## v1.7.4
 - **자동공지(/자동공지, autonotice.yml)**에서 나가는 메시지에는 더 이상 **[보상보기 클릭]** 버튼을 붙이지 않습니다. (요청 반영)
 - **config.yml → announce** 방송에는 계속 **[링크] + " / 추천하시고 보상 받아가세요" + [보상보기 클릭]** UI가 붙습니다.

@@ -43,6 +43,7 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
 
     private Inventory gui;
     private int taskId = -1;
+    private int rankResetTaskId = -1;
 
     private File queueFile, statsFile;
     private org.bukkit.configuration.file.YamlConfiguration queue, stats;
@@ -74,7 +75,9 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
         hookVotifier();
         monthly = new MonthlyRewardManager(this);
         log("&aUltimateVotePlus v1.3.2 enabled.");
-    }
+    
+        ensureMonthlyRankResetTask();
+}
 
     @Override
     public void onDisable() {
@@ -102,48 +105,48 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
         saveYaml(stats, statsFile);
     }
 
-    private                 void startAnnounceTask() {
+    private                                 void startAnnounceTask() {
         FileConfiguration cfg = getConfig();
         if (!cfg.getBoolean("announce.enabled", true)) return;
         int seconds = Math.max(5, cfg.getInt("announce.interval-seconds", 30));
         String legacyPrefix = color(cfg.getString("announce.message",
-                "&a[알림]&f 마인리스트 추천 부탁드립니다"));
-        final String minelist = cfg.getString("links.minelist", "https://minelist.kr/");
-        final String pitch = "추천하시고 보상 받아가세요";
+                "&a[알림]&f 마인리스트 추천 부탁드립니다!"));
+        // cleanup placeholders if any
+        String prefixText = legacyPrefix
+                .replace("{minelist} / {minepage}", "")
+                .replace("{minelist}", "")
+                .replace("{minepage}", "")
+                .replaceAll("\\s{2,}", " ")
+                .trim();
+        final String url = cfg.getString("links.minelist", "https://minelist.kr/servers/16673-sarisam.kr");
 
         taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> {
             for (Player pl : Bukkit.getOnlinePlayers()) {
-                net.md_5.bungee.api.chat.BaseComponent[] prefix =
-                        net.md_5.bungee.api.chat.TextComponent.fromLegacyText(legacyPrefix);
+                // 1) Line 1: prefix + " &b보상 &f받아가세요"
+                String line1 = prefixText + color(" &b보상 &f받아가세요");
+                pl.spigot().sendMessage(net.md_5.bungee.api.chat.TextComponent.fromLegacyText(line1));
 
-                net.md_5.bungee.api.chat.TextComponent link =
-                        new net.md_5.bungee.api.chat.TextComponent(org.bukkit.ChatColor.YELLOW + " 링크 ");
-                link.setClickEvent(new net.md_5.bungee.api.chat.ClickEvent(
-                        net.md_5.bungee.api.chat.ClickEvent.Action.OPEN_URL, minelist));
-                link.setHoverEvent(new net.md_5.bungee.api.chat.HoverEvent(
-                        net.md_5.bungee.api.chat.HoverEvent.Action.SHOW_TEXT,
-                        new net.md_5.bungee.api.chat.ComponentBuilder(org.bukkit.ChatColor.GRAY + "클릭하여 마인리스트 열기").create()));
-
-                net.md_5.bungee.api.chat.BaseComponent[] pitchComp =
-                        net.md_5.bungee.api.chat.TextComponent.fromLegacyText(
-                                org.bukkit.ChatColor.WHITE + " / " + org.bukkit.ChatColor.AQUA + pitch + " ");
-
-                net.md_5.bungee.api.chat.TextComponent button =
+                // 2) Line 2: [ 보상보기 클릭 ] (RUN_COMMAND)
+                net.md_5.bungee.api.chat.TextComponent rewardButton =
                         new net.md_5.bungee.api.chat.TextComponent(
                                 org.bukkit.ChatColor.GRAY + " [ " + org.bukkit.ChatColor.YELLOW + "보상보기 클릭" + org.bukkit.ChatColor.GRAY + " ]");
-                button.setClickEvent(new net.md_5.bungee.api.chat.ClickEvent(
+                rewardButton.setClickEvent(new net.md_5.bungee.api.chat.ClickEvent(
                         net.md_5.bungee.api.chat.ClickEvent.Action.RUN_COMMAND, "/마인리스트 보상"));
-                button.setHoverEvent(new net.md_5.bungee.api.chat.HoverEvent(
+                rewardButton.setHoverEvent(new net.md_5.bungee.api.chat.HoverEvent(
                         net.md_5.bungee.api.chat.HoverEvent.Action.SHOW_TEXT,
                         new net.md_5.bungee.api.chat.ComponentBuilder(org.bukkit.ChatColor.GRAY + "클릭하여 보상 미리보기").create()));
+                pl.spigot().sendMessage(rewardButton);
 
-                pl.spigot().sendMessage(new net.md_5.bungee.api.chat.ComponentBuilder()
-                        .append(prefix)
-                        .append(" ")
-                        .append(link)
-                        .append(pitchComp)
-                        .append(button)
-                        .create());
+                // 3) Line 3: [ 추천링크 클릭 ] (OPEN_URL to links.minelist)
+                net.md_5.bungee.api.chat.TextComponent linkButton =
+                        new net.md_5.bungee.api.chat.TextComponent(
+                                org.bukkit.ChatColor.GRAY + " [ " + org.bukkit.ChatColor.AQUA + "추천링크 클릭" + org.bukkit.ChatColor.GRAY + " ]");
+                linkButton.setClickEvent(new net.md_5.bungee.api.chat.ClickEvent(
+                        net.md_5.bungee.api.chat.ClickEvent.Action.OPEN_URL, url));
+                linkButton.setHoverEvent(new net.md_5.bungee.api.chat.HoverEvent(
+                        net.md_5.bungee.api.chat.HoverEvent.Action.SHOW_TEXT,
+                        new net.md_5.bungee.api.chat.ComponentBuilder(org.bukkit.ChatColor.GRAY + "클릭하여 추천 링크 열기").create()));
+                pl.spigot().sendMessage(linkButton);
             }
         }, 20L, seconds * 20L);
     }
@@ -577,7 +580,20 @@ p.spigot().sendMessage(new net.md_5.bungee.api.chat.ComponentBuilder().append(pr
             org.bukkit.entity.Player p = (org.bukkit.entity.Player) sender;
             if (!p.hasPermission("uvp.admin")) { p.sendMessage(color("&c권한이 없습니다. (uvp.admin)")); return true; }
             openGui(p); return true;
-        } else if ("리로드".equalsIgnoreCase(args[0])) {
+        
+        } else if ("공지".equalsIgnoreCase(args[0])) {
+            if (!sender.hasPermission("uvp.admin")) { sender.sendMessage(color("&c권한이 없습니다. (uvp.admin)")); return true; }
+            if (args.length < 2) { sender.sendMessage(color("&c사용법: /마인리스트 공지 <초>")); return true; }
+            int sec;
+            try { sec = Math.max(5, Integer.parseInt(args[1])); }
+            catch (NumberFormatException ex) { sender.sendMessage(color("&c숫자로 입력해주세요. 예: /마인리스트 공지 30")); return true; }
+            getConfig().set("announce.interval-seconds", sec);
+            saveConfig();
+            if (taskId != -1) { org.bukkit.Bukkit.getScheduler().cancelTask(taskId); taskId = -1; }
+            startAnnounceTask();
+            sender.sendMessage(color("&a공지 간격을 &e" + sec + "초&a 로 설정했습니다."));
+            return true;
+    } else if ("리로드".equalsIgnoreCase(args[0])) {
             if (!sender.hasPermission("uvp.admin")) { sender.sendMessage(color("&c권한이 없습니다. (uvp.admin)")); return true; }
             reloadConfig();
             if (taskId != -1) { org.bukkit.Bukkit.getScheduler().cancelTask(taskId); taskId = -1; }
@@ -626,4 +642,40 @@ p.spigot().sendMessage(new net.md_5.bungee.api.chat.ComponentBuilder().append(pr
         } catch (Exception ignored) {}
     }
 
+
+    private void ensureMonthlyRankResetTask() {
+        // Cancel previous
+        if (rankResetTaskId != -1) {
+            try { Bukkit.getScheduler().cancelTask(rankResetTaskId); } catch (Throwable ignored) {}
+            rankResetTaskId = -1;
+        }
+        // Do an immediate check
+        try { checkAndResetRankIfMonthChanged(); } catch (Throwable ignored) {}
+        // Schedule hourly checks
+        rankResetTaskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> {
+            try { checkAndResetRankIfMonthChanged(); } catch (Throwable ignored) {}
+        }, 20L * 60L * 30L, 20L * 60L * 60L); // first run after 30min, then every 60min
+    }
+
+    private void checkAndResetRankIfMonthChanged() {
+        java.time.ZoneId zone;
+        try {
+            String tz = getConfig().getString("monthly-reward.timezone", "Asia/Seoul");
+            zone = java.time.ZoneId.of(tz);
+        } catch (Throwable t) {
+            zone = java.time.ZoneId.systemDefault();
+        }
+        java.time.LocalDate today = java.time.LocalDate.now(zone);
+        String ym = today.format(java.time.format.DateTimeFormatter.ofPattern("yyyyMM"));
+        String last = stats.getString("rank.lastResetMonth", "");
+        if (!ym.equals(last)) {
+            // Clear cumulative rank sections
+            stats.set("byPlayer", null);
+            stats.set("bySite", null);
+            stats.set("rank.lastResetMonth", ym);
+            saveYaml(stats, statsFile);
+            log("&e[랭킹] 월 변경 감지 — 누적 랭킹(byPlayer/bySite) 초기화 완료 (" + last + " -> " + ym + ")");
+        }
+    }
+    
 }
