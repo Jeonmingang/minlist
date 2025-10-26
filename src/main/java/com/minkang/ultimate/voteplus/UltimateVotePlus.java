@@ -129,7 +129,7 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
                         .format(java.time.format.DateTimeFormatter.BASIC_ISO_DATE);
                 String _key = pl.getName().toLowerCase(java.util.Locale.ROOT);
                 int _cnt = stats.getInt("daily." + _day + "." + _key, 0);
-                String _badge = org.jsoup.parser.Parser.unescapeEntities("&7[ &f오늘 누적 추천수 " + _cnt + " &7]", false);
+                String _badge = "&7[ &f오늘 누적 추천수 " + _cnt + " &7]";
                 // send first line with badge (convert color codes)
                 pl.spigot().sendMessage(net.md_5.bungee.api.chat.TextComponent.fromLegacyText(line1 + " " + color(_badge)));
 // 2) Line 2: [ 마인리스트 추천 보상 클릭 ] (RUN_COMMAND)
