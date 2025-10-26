@@ -124,6 +124,14 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
             for (Player pl : Bukkit.getOnlinePlayers()) {
                 // 1) Line 1: prefix + " &b보상 &f받아가세요"
                 String line1 = prefixText + color(" &b보상 &f받아가세요");
+
+                String _day = java.time.LocalDate.now(java.time.ZoneId.of(getConfig().getString("monthly-reward.timezone","Asia/Seoul")))
+                        .format(java.time.format.DateTimeFormatter.BASIC_ISO_DATE);
+                String _key = pl.getName().toLowerCase(java.util.Locale.ROOT);
+                int _cnt = stats.getInt("daily." + _day + "." + _key, 0);
+                String _badge = org.bukkit.ChatColor.GRAY + "[ " + org.bukkit.ChatColor.WHITE + "오늘 누적 추천수 " + _cnt + " " + org.bukkit.ChatColor.GRAY + "]";
+                line1 = line1 + " " + _badge;
+            
                 String _day = java.time.LocalDate.now(java.time.ZoneId.of(getConfig().getString("monthly-reward.timezone","Asia/Seoul")))
                         .format(java.time.format.DateTimeFormatter.BASIC_ISO_DATE);
                 String _key = pl.getName().toLowerCase(java.util.Locale.ROOT);
@@ -410,7 +418,7 @@ private void maybeBroadcastReward(String pName, ServiceType type) {
         for (int s : cfg.getIntegerList("rewards.slots.minepage")) gui.setItem(s, null);
     }
 
-    private ItemStack makeItem(Material mat, String name, String... lore) {
+    private ItemStack makeItem(Material mat, String name, String lore) {
         ItemStack it = new ItemStack(mat);
         ItemMeta meta = it.getItemMeta();
         if (meta != null) {
