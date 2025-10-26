@@ -472,7 +472,8 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
                     monthlyCount = 0;
                 }
                 boolean votedToday = todayStr.equals(stats.getString("lastVote." + key, ""));
-                sender.sendMessage(color("&f오늘 추천 여부: " + (votedToday ? "&a예" : "&c아니오") + " &7| &f이번달 누적: &e" + monthlyCount + "회"));
+                // removed old status line (before button)
+// " + (votedToday ? "&a예" : "&c아니오") + " &7| &f이번달 누적: &e" + monthlyCount + "회"));
             } else {
                 // Console: don't print the clickable button; keep minimal info
             }
