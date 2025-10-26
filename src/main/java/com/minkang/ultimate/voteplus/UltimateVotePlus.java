@@ -379,8 +379,10 @@ private void hookVotifier() {
         gui.setItem(4, makeItem(Material.EMERALD_BLOCK, "&a마인리스트 보상 영역", "&7좌측 녹색 슬롯에 넣으세요"));
         gui.setItem(22, makeItem(Material.LAPIS_BLOCK, "&b마인페이지 보상 영역", "&7우측 파란 슬롯에 넣으세요"));
         gui.setItem(49, makeItem(Material.ANVIL, "&e저장", "&7설정 저장"));
-        gui.setItem(45, makeItem(Material.REDSTONE_BLOCK, "&c마인리스트 보상 초기화"));
-        gui.setItem(53, makeItem(Material.REDSTONE, "&c마인페이지 보상 초기화"));
+        gui.setItem(45, makeItem(Material.REDSTONE_BLOCK, "&c마인리스트 보상 초기화", "&7클릭하여 초기화"));
+
+        gui.setItem(53, makeItem(Material.REDSTONE, "&c마인페이지 보상 초기화", "&7클릭하여 초기화"));
+
         ItemStack pane = makeItem(Material.GRAY_STAINED_GLASS_PANE, "&7", "");
         for (int i = 0; i < 54; i++) if (gui.getItem(i) == null) gui.setItem(i, pane);
         FileConfiguration cfg = getConfig();
@@ -388,14 +390,18 @@ private void hookVotifier() {
         for (int s : cfg.getIntegerList("rewards.slots.minepage")) gui.setItem(s, null);
     }
 
-    private ItemStack makeItem(Material mat, String name, String lore) {
+    private ItemStack makeItem(Material mat, String name, String... lore) {
         ItemStack it = new ItemStack(mat);
         ItemMeta meta = it.getItemMeta();
         if (meta != null) {
             meta.setDisplayName(color(name));
-            List<String> l = new ArrayList<>();
-            for (String s : lore) l.add(color(s));
-            meta.setLore(l);
+            java.util.List<String> ls = new java.util.ArrayList<>();
+            if (lore != null) {
+                for (String s : lore) {
+                    if (s != null && !s.isEmpty()) ls.add(color(s));
+                }
+            }
+            if (!ls.isEmpty()) meta.setLore(ls);
             it.setItemMeta(meta);
         }
         return it;
