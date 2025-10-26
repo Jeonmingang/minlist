@@ -1,51 +1,64 @@
+# UltimateVotePlus - config.yml (v1.7.6)
+# Lines starting with '#' are comments.
+
 links:
+  # 추천 링크 버튼(3번째 줄)에 사용되는 URL. 서버에 맞게 수정하세요.
   minelist: 'https://minelist.kr/servers/16673-sarisam.kr'
+  # 선택 항목: 마인페이지 안내문/URL 등 자유롭게 사용 가능
   minepage: '추천하시고 보상 받아가세요 캐시 및 추천코인 지급'
+
 announce:
+  # true 로 두면 주기적으로 아래 메시지를 방송합니다.
+  # /마인리스트 공지 <초> 로 interval-seconds를 게임 내에서 즉시 변경할 수 있습니다.
   enabled: false
   interval-seconds: 30
-  message: '&a[알림]&f 마인리스트 추천 부탁드립니다'
+  # 1번째 줄에 그대로 출력됩니다. 플러그인이 자동으로 뒤에 " &b보상 &f받아가세요" 를 붙이고,
+  # 2번째 줄에 [ 보상보기 클릭 ], 3번째 줄에 [ 추천링크 클릭 ] 버튼을 추가합니다.
+  message: '&a[알림]&f 마인리스트 추천 부탁드립니다!'
+
 reward:
+  # 오프라인 유저는 큐에 적립 후 접속 시 일괄 지급
   queue-offline: true
+  # 닉네임 대소문자/철자 유사 매칭 허용
   allow-fuzzy-online-lookup: true
+
 broadcast-on-reward:
   enabled: true
-  message: '&a[추천]&f {player} 님이 &e{site}&f 추천 완료! &7[ 누적 추천수 {count_total} ] &7|
-    &6마인리스트 매달 최다 추천 1위에게 &f1만 캐시 지급'
+  message: "&a[추천]&f {player} 님이 &e{site}&f 추천 완료! &7[ 누적 추천수 {count_total} ] &7| &6마인리스트 매달 최다 추천 1위에게 &f1만 캐시 지급"
+
 debug:
   log: true
+
+# 보상 GUI 설정
 rewards:
+  # 보상 진열 슬롯(수정 가능)
   slots:
-    minelist:
-    - 10
-    - 11
-    - 12
-    - 13
-    - 14
-    - 15
-    - 16
-    minepage:
-    - 28
-    - 29
-    - 30
-    - 31
-    - 32
-    - 33
-    - 34
+    minelist: [10, 11, 12, 13, 14, 15, 16]
+    minepage: [28, 29, 30, 31, 32, 33, 34]
+  # 보상 아이템 데이터(자동 저장)
   data:
-    minelist: []
-    minepage: []
+    minelist: [ ]
+    minepage: [ ]
+
+# 추천 1회당 지급 (예: 캐시 50)
 vote-reward:
   command-enabled: true
   command: '캐시 지급 {player} 50'
   player-message: '&a[추천]&f 추천 보상으로 &e{amount} 캐시&f가 지급되었습니다.'
+
+# 월간 랭킹 보상/초기화
 monthly-reward:
   enabled: true
+  # 월말 초기화 후 누적 랭킹을 0으로 리셋 (플러그인 내부 일정 체크 + timezone 기준)
   reset-cumulative: true
   timezone: Asia/Seoul
+  # 월간 1위 보상 커맨드/방송
   command: '캐시 지급 {player} 10000'
   broadcast: '&e[추천] 지난달 1위 {player} ({count}회) — 10,000 캐시 지급!'
+  # 동률 처리 방법: earliest(먼저 달성) 또는 latest 등
   tie-breaker: earliest
+
+# 초기화까지 남은시간 방송(선택)
 reset-countdown:
   enabled: true
   message: '&7[마인리스트 초기화까지 남은시간] &f{time}'
