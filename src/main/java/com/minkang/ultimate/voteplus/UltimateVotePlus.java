@@ -286,11 +286,14 @@ private void maybeBroadcastReward(String pName, ServiceType type) {
     private void incrementStats(String playerName, ServiceType type) {
         int total = stats.getInt("total", 0) + 1;
         stats.set("total", total);
-        String key = (type == ServiceType.MINEPAGE ? "minepage" : "minelist"); // UNKNOWN은 minelist로 합산
+
+        // by site / by player
+        String key = (type == ServiceType.MINEPAGE ? "minepage" : "minelist");
         stats.set("bySite." + key, stats.getInt("bySite." + key, 0) + 1);
-        stats.set("byPlayer." + playerName.toLowerCase(Locale.ROOT), stats.getInt("byPlayer." + playerName.toLowerCase(Locale.ROOT), 0) + 1);
-        
-        // Update last vote date (yyyy-MM-dd) and monthly counter (yyyyMM)
+        stats.set("byPlayer." + playerName.toLowerCase(java.util.Locale.ROOT),
+                stats.getInt("byPlayer." + playerName.toLowerCase(java.util.Locale.ROOT), 0) + 1);
+
+        // Update last vote date (yyyy-MM-dd), monthly (yyyyMM), and daily (yyyyMMdd)
         try {
             java.time.ZoneId zone = java.time.ZoneId.systemDefault();
             java.time.LocalDate today = java.time.LocalDate.now(zone);
@@ -298,18 +301,13 @@ private void maybeBroadcastReward(String pName, ServiceType type) {
             String ym = today.format(java.time.format.DateTimeFormatter.ofPattern("yyyyMM"));
             String playerKey = playerName.toLowerCase(java.util.Locale.ROOT);
             stats.set("lastVote." + playerKey, todayStr);
+
             String monthlyKey = "monthly." + ym + "." + playerKey;
             stats.set(monthlyKey, stats.getInt(monthlyKey, 0) + 1);
-            // daily counter (YYYYMMDD)
+
             String dayKey = today.format(java.time.format.DateTimeFormatter.BASIC_ISO_DATE);
             String dailyKey = "daily." + dayKey + "." + playerKey;
             stats.set(dailyKey, stats.getInt(dailyKey, 0) + 1);
-
-            // daily counter (YYYYMMDD)
-            String dayKey = today.format(java.time.format.DateTimeFormatter.BASIC_ISO_DATE);
-            String dailyKey = "daily." + dayKey + "." + playerKey;
-            stats.set(dailyKey, stats.getInt(dailyKey, 0) + 1);
-
         } catch (Throwable t) { /* ignore time errors */ }
 
         saveYaml(stats, statsFile);
