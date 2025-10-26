@@ -1,11 +1,23 @@
 name: UltimateVotePlus
 main: com.minkang.ultimate.voteplus.UltimateVotePlus
 version: 1.8.5
+api-version: 1.16
+softdepend:
+  - NuVotifier
 
 commands:
+  마인리스트:
+    description: "추천 링크 안내 및 관리"
+    usage: "/마인리스트 [랭킹]|설정|리로드|테스트|보상|공지 <초>"
   추천:
     description: "추천 링크 안내 (마인리스트 별칭과 동일 기능)"
     usage: "/추천 [랭킹]"
+  자동공지:
+    description: "자동 공지 관리"
+    usage: "/자동공지 목록|추가 <번호> <내용>|삭제 <번호>|시간 <번호> <초>|기본시간 <초>|켜기|끄기"
+    permission: "uvp.admin"
+    permission-message: "&c권한이 없습니다. (uvp.admin)"
+    aliases: [autonotice, notice]
 
 permissions:
   uvp.admin:
