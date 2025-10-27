@@ -2,3 +2,5 @@ Fix: move monthly-threshold patch into handleVote() scope to avoid undefined var
 Version bump to 1.9.2.
 
 1.9.3: Removed duplicate dayKey/dailyKey declarations in incrementStats().
+
+1.9.4: Merge duplicated 'monthly-reward:' blocks into one to avoid YAML conflicts.
