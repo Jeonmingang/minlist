@@ -4,11 +4,11 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.minkang.ultimate</groupId>
-  <artifactId>UltimateRPS</artifactId>
+  <artifactId>UltimateVotePlus</artifactId>
   <version>1.4.3</version>
   <packaging>jar</packaging>
 
-  <name>UltimateRPS</name>
+  <name>UltimateVotePlus</name>
   <description>Rock-Paper-Scissors + Roulette for 1.16.5 (Java 11, CatServer/Spigot)</description>
   <url>https://example.com/UltimateRPS</url>
 

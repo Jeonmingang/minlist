@@ -1,167 +1,148 @@
 package com.minkang.ultimate.voteplus;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.entity.Player;
-
+import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.TreeMap;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.regex.Pattern;
 
 public class AutoNoticeManager {
     private final JavaPlugin plugin;
     private File file;
     private YamlConfiguration yaml;
-    private final Map<Integer, Integer> runningTasks = new LinkedHashMap<>(); // id -> taskId
+
+    private int taskId = -1;
+    private String lastId = null;
 
     public AutoNoticeManager(JavaPlugin plugin) {
         this.plugin = plugin;
     }
 
-    /** autonotice.yml 로드/초기화 */
     public void load() {
         try {
             file = new File(plugin.getDataFolder(), "autonotice.yml");
             if (!file.exists()) {
                 plugin.getDataFolder().mkdirs();
-                yaml = new YamlConfiguration();
-                yaml.set("enabled", true);
-                yaml.set("interval-seconds", 60);            // 기본 간격
-                Map<String, String> defaults = new LinkedHashMap<>();
-                defaults.put("1", "&a[공지]&f 디스코드 참여: &bdiscord.gg/yourcode");
-                defaults.put("2", "&e[이벤트]&f 매일 &a/보상 &f확인!");
-                yaml.createSection("messages", defaults);     // 번호 -> 메시지
-                yaml.createSection("intervals");              // 번호 -> 개별 간격(초)
-                yaml.save(file);
+                file.createNewFile();
             }
             yaml = YamlConfiguration.loadConfiguration(file);
-            // 보정
-            if (!yaml.isSet("enabled")) yaml.set("enabled", true);
-            if (!yaml.isInt("interval-seconds")) yaml.set("interval-seconds", 60);
-            if (!yaml.isConfigurationSection("messages")) yaml.createSection("messages");
-            if (!yaml.isConfigurationSection("intervals")) yaml.createSection("intervals");
-            save();
-        } catch (Exception e) {
-            plugin.getLogger().warning("[AutoNotice] 로드 오류: " + e.getMessage());
+            if (!yaml.isConfigurationSection("autonotice.messages")) {
+                yaml.createSection("autonotice.messages");
+                save();
+            }
+        } catch (IOException e) {
+            plugin.getLogger().severe("[AutoNotice] 파일 로드 오류: " + e.getMessage());
         }
     }
 
     public void save() {
-        try { yaml.save(file); } catch (IOException e) {
-            plugin.getLogger().warning("[AutoNotice] 저장 오류: " + e.getMessage());
+        try {
+            if (yaml != null) yaml.save(file);
+        } catch (IOException e) {
+            plugin.getLogger().severe("[AutoNotice] 파일 저장 오류: " + e.getMessage());
         }
     }
 
-    // 상태/간격
-    public boolean isEnabled() {
-        return yaml.getBoolean("enabled", true);
-    }
-    public void setEnabled(boolean v) {
-        yaml.set("enabled", v);
-        save();
-        if (v) start(); else stop();
+    public List<String> getIds() {
+        Set<String> keys = yaml.getConfigurationSection("autonotice.messages").getKeys(false);
+        List<String> list = new ArrayList<>(keys);
+        list.sort(Comparator.comparingInt(Integer::parseInt));
+        return list;
     }
 
-    public int getDefaultIntervalSeconds() {
-        int sec = yaml.getInt("interval-seconds", 60);
-        return Math.max(5, sec);
-    }
-    public void setDefaultIntervalSeconds(int sec) {
-        yaml.set("interval-seconds", Math.max(5, sec));
-        save();
-        if (isRunning()) { stop(); start(); }
+    public String getText(String id) {
+        return yaml.getString("autonotice.messages." + id + ".text", null);
     }
 
-    public int getIntervalSeconds(int id) {
-        int v = yaml.getInt("intervals." + id, -1);
-        if (v <= 0) return getDefaultIntervalSeconds();
-        return Math.max(5, v);
-    }
-    public void setIntervalSeconds(int id, int sec) {
-        yaml.set("intervals." + id, Math.max(5, sec));
-        save();
-        if (isRunning()) { stop(); start(); }
+    public int getSeconds(String id) {
+        return yaml.getInt("autonotice.messages." + id + ".seconds", 0);
     }
 
-    // 메시지 CRUD
-    public Map<Integer, String> getMessages() {
-        Map<Integer,String> map = new TreeMap<>();
-        for (String k : yaml.getConfigurationSection("messages").getKeys(false)) {
-            try {
-                int id = Integer.parseInt(k);
-                String msg = yaml.getString("messages." + k, "");
-                if (msg != null && !msg.isEmpty()) map.put(id, msg);
-            } catch (NumberFormatException ignore) {}
+    public void setText(String id, String text) {
+        yaml.set("autonotice.messages." + id + ".text", text);
+        save();
+    }
+
+    public void setSeconds(String id, int seconds) {
+        yaml.set("autonotice.messages." + id + ".seconds", Math.max(0, seconds));
+        save();
+    }
+
+    public void remove(String id) {
+        yaml.set("autonotice.messages." + id, null);
+        save();
+    }
+
+    public String color(String s) {
+        if (s == null) return "";
+        return org.bukkit.ChatColor.translateAlternateColorCodes('&', s);
+    }
+
+    private List<String> validIdsWithTime() {
+        List<String> ids = getIds();
+        List<String> out = new ArrayList<>();
+        for (String id : ids) {
+            if (getSeconds(id) > 0 && getText(id) != null && !getText(id).isEmpty()) out.add(id);
         }
-        return map;
-    }
-    public void addMessage(int id, String content) {
-        yaml.set("messages." + id, content);
-        save();
-        if (isRunning()) { stop(); start(); }
-    }
-    public boolean removeMessage(int id) {
-        String path = "messages." + id;
-        if (yaml.contains(path)) {
-            yaml.set(path, null);
-            // interval도 같이 정리
-            yaml.set("intervals." + id, null);
-            save();
-            if (isRunning()) { stop(); start(); }
-            return true;
-        }
-        return false;
+        return out;
     }
 
-    public boolean isRunning() {
-        return !runningTasks.isEmpty();
+    private String nextId() {
+        List<String> ids = validIdsWithTime();
+        if (ids.isEmpty()) return null;
+        if (lastId == null) return ids.get(0);
+        int idx = ids.indexOf(lastId);
+        if (idx == -1 || idx + 1 >= ids.size()) return ids.get(0);
+        return ids.get(idx + 1);
     }
 
     public void start() {
-        if (!isEnabled()) return;
-        stop(); // 초기화
-        Map<Integer, String> map = getMessages();
-        for (Map.Entry<Integer, String> e : map.entrySet()) {
-            final int id = e.getKey();
-            final String msg = ChatColor.translateAlternateColorCodes('&', e.getValue());
-            final int sec = getIntervalSeconds(id);
-            int tid = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, () -> {
-                for (Player p : Bukkit.getOnlinePlayers()) {
-                    p.sendMessage(msg);
-                }
-                // removed console broadcast of [보상보기] per request
-            }, 20L * 5, 20L * sec); // 5초 후 시작
-            runningTasks.put(id, tid);
-        }
-        plugin.getLogger().info("[AutoNotice] started " + runningTasks.size() + " tasks.");
+        stop();
+        scheduleNext(0L);
+        plugin.getLogger().info("[AutoNotice] started with " + validIdsWithTime().size() + " message(s).");
     }
 
     public void stop() {
-        for (Integer tid : runningTasks.values()) {
-            try { Bukkit.getScheduler().cancelTask(tid); } catch (Throwable ignore) {}
+        if (taskId != -1) {
+            Bukkit.getScheduler().cancelTask(taskId);
+            taskId = -1;
         }
-        runningTasks.clear();
     }
 
-    // UI
-    private static String color(String s) { return ChatColor.translateAlternateColorCodes('&', s); }
+    private void scheduleNext(long delayTicks) {
+        stop();
+        taskId = Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+            String id = nextId();
+            if (id == null) {
+                // nothing to send; check again in 10s
+                scheduleNext(200L);
+                return;
+            }
+            lastId = id;
+            String text = getText(id);
+            int sec = getSeconds(id);
 
-    public void sendList(CommandSender sender) {
-        Map<Integer, String> map = getMessages();
-        sender.sendMessage(color("&a[자동공지 목록] &7(기본 간격: " + getDefaultIntervalSeconds() + "초, 상태: " + (isEnabled() ? "&aON" : "&cOFF") + "&7)"));
-        if (map.isEmpty()) {
-            sender.sendMessage(color("&7등록된 메시지가 없습니다."));
-            return;
-        }
-        for (Map.Entry<Integer, String> e : map.entrySet()) {
-            int id = e.getKey();
-            sender.sendMessage(color("&e#" + id + " &7(" + getIntervalSeconds(id) + "초): &f" + e.getValue()));
-        }
+            // Broadcast (supports multi-part with '|')
+            String colored = color(text == null ? "" : text);
+            String[] parts = colored.split(Pattern.quote("|"), -1);
+            if (parts.length == 0) {
+                Bukkit.broadcastMessage(colored);
+            } else if (parts.length == 1) {
+                Bukkit.broadcastMessage(parts[0].trim());
+            } else {
+                if (!parts[0].trim().isEmpty()) Bukkit.broadcastMessage(parts[0].trim());
+                if (!parts[1].trim().isEmpty()) Bukkit.broadcastMessage(parts[1].trim());
+            }
+
+            // Schedule using this message's seconds
+            long nextTicks = Math.max(1, sec) * 20L;
+            scheduleNext(nextTicks);
+        }, delayTicks);
     }
 }
