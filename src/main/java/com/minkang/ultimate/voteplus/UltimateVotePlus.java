@@ -355,7 +355,10 @@ private void maybeBroadcastReward(String pName, ServiceType type) {
         
         // Update last vote date (yyyy-MM-dd) and monthly counter (yyyyMM)
         try {
-            java.time.ZoneId zone = java.time.ZoneId.systemDefault();
+            java.time.ZoneId zone;
+            try {
+                zone = java.time.ZoneId.of(getConfig().getString("monthly-reward.timezone", "Asia/Seoul"));
+            } catch (Throwable t) { zone = java.time.ZoneId.systemDefault(); }
             java.time.LocalDate today = java.time.LocalDate.now(zone);
             String todayStr = today.toString(); // yyyy-MM-dd
             String ym = today.format(java.time.format.DateTimeFormatter.ofPattern("yyyyMM"));

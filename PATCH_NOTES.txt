@@ -4,3 +4,5 @@ Version bump to 1.9.2.
 1.9.3: Removed duplicate dayKey/dailyKey declarations in incrementStats().
 
 1.9.4: Merge duplicated 'monthly-reward:' blocks into one to avoid YAML conflicts.
+
+1.9.5: Fix daily counter timezone mismatch — incrementStats now uses config timezone (monthly-reward.timezone) to match badge display.
