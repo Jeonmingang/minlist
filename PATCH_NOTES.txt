@@ -20,3 +20,8 @@ Implementation notes:
 - Counts are stored at stats.yml: month.<yyyyMM>.byPlayer.<playerLower>=N
 - Threshold award flags: stats.yml: month.<yyyyMM>.awarded.<playerLower>=true
 - Top1 paid flag: stats.yml: month.<yyyyMM>.top1Paid=true
+
+
+1.9.1:
+- 중복 일일 카운트 코드 정리(컴파일 오류 가능성 제거).
+- 기존 MonthlyRewardManager는 기본 비활성화(중복 지급 방지) — config: monthly-reward.legacy-manager.enabled=false.

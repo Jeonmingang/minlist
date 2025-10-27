@@ -74,7 +74,9 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
         startAnnounceTask();
         ensureTop1PayoutTask();
         hookVotifier();
-        monthly = new MonthlyRewardManager(this);
+        if (getConfig().getBoolean("monthly-reward.legacy-manager.enabled", false)) {
+            monthly = new MonthlyRewardManager(this);
+        }
         log("&aUltimateVotePlus v1.3.2 enabled.");
     
         ensureMonthlyRankResetTask();
@@ -366,12 +368,7 @@ private void maybeBroadcastReward(String pName, ServiceType type) {
             String dailyKey = "daily." + dayKey + "." + playerKey;
             stats.set(dailyKey, stats.getInt(dailyKey, 0) + 1);
 
-            // daily counter (YYYYMMDD)
-            String dayKey = today.format(java.time.format.DateTimeFormatter.BASIC_ISO_DATE);
-            String dailyKey = "daily." + dayKey + "." + playerKey;
-            stats.set(dailyKey, stats.getInt(dailyKey, 0) + 1);
-
-        } catch (Throwable t) { /* ignore time errors */ }
+                    } catch (Throwable t) { /* ignore time errors */ }
 
         saveYaml(stats, statsFile);
     }

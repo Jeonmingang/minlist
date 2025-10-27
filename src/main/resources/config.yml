@@ -85,3 +85,7 @@ monthly-reward:
   # 월간 1위 방송 메시지
   top1-broadcast: '&e[추천] 지난달 1위 {player} ({count}회) — {amount} 캐시 지급!'
 
+
+# 구버전 월간 1위 지급 매니저 활성화 (기본: false)
+monthly-reward:
+  legacy-manager.enabled: false
