@@ -6,3 +6,5 @@ Version bump to 1.9.2.
 1.9.4: Merge duplicated 'monthly-reward:' blocks into one to avoid YAML conflicts.
 
 1.9.5: Fix daily counter timezone mismatch — incrementStats now uses config timezone (monthly-reward.timezone) to match badge display.
+
+1.9.6: Disable legacy MonthlyRewardManager payout by default with 'monthly-reward.legacy-manager.enabled: false' to prevent double payouts. Added guard in scheduler and checkMonthly().

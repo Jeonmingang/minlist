@@ -79,6 +79,7 @@ public class MonthlyRewardManager {
     }
 
     private void checkMonthly() {
+        if (!plugin.getConfig().getBoolean("monthly-reward.legacy-manager.enabled", false)) return;
         if (!plugin.getConfig().getBoolean("monthly-reward.enabled", true)) return;
         YearMonth now = YearMonth.now(zoneId);
         YearMonth prev = now.minusMonths(1);

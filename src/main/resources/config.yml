@@ -52,6 +52,7 @@ reset-countdown:
   message: '&7[마인리스트 초기화까지 남은시간] &f{time}'
 
 monthly-reward:
+  legacy-manager.enabled: false  # 구(레거시) 월간 1위 지급 로직 활성화 여부(기본 끔)
   enabled: true
   reset-cumulative: true
   timezone: Asia/Seoul
