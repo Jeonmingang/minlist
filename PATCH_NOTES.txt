@@ -1,2 +1,4 @@
 Fix: move monthly-threshold patch into handleVote() scope to avoid undefined variables (playerName/target).
 Version bump to 1.9.2.
+
+1.9.3: Removed duplicate dayKey/dailyKey declarations in incrementStats().
