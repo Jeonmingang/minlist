@@ -74,9 +74,7 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
         startAnnounceTask();
         ensureTop1PayoutTask();
         hookVotifier();
-        if (getConfig().getBoolean("monthly-reward.legacy-manager.enabled", false)) {
-            monthly = new MonthlyRewardManager(this);
-        }
+        monthly = new MonthlyRewardManager(this);
         log("&aUltimateVotePlus v1.3.2 enabled.");
     
         ensureMonthlyRankResetTask();
@@ -90,65 +88,7 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
             taskId = -1;
         }
         
-        /*__MONTHLY_THRESHOLD_PATCH__*/
-        try {
-            java.time.ZoneId zone;
-            try {
-                zone = java.time.ZoneId.of(getConfig().getString("monthly-reward.timezone", "Asia/Seoul"));
-            } catch (Throwable t) {
-                zone = java.time.ZoneId.systemDefault();
-            }
-            java.time.LocalDate today = java.time.LocalDate.now(zone);
-            String ymKey = today.format(java.time.format.DateTimeFormatter.ofPattern("yyyyMM"));
-            String playerKey = playerName.toLowerCase(java.util.Locale.ROOT);
-
-            // Increment monthly count
-            String monthCounterKey = "month." + ymKey + ".byPlayer." + playerKey;
-            int mCount = stats.getInt(monthCounterKey, 0) + 1;
-            stats.set(monthCounterKey, mCount);
-
-            // Notice on each vote (config editable)
-            if (getConfig().getBoolean("monthly-reward.notice-on-vote.enabled", true)) {
-                String msg = getConfig().getString("monthly-reward.notice-on-vote.message",
-                        "&7[추천] 매달 {threshold}회 이상 추천 시 &e{amount} 캐시 지급!");
-                msg = msg.replace("{threshold}", String.valueOf(getConfig().getInt("monthly-reward.threshold-count", 30)))
-                         .replace("{amount}", String.valueOf(getConfig().getInt("monthly-reward.threshold-amount", 5000)))
-                         .replace("{top1_amount}", String.valueOf(getConfig().getInt("monthly-reward.top1-amount", 10000)))
-                         .replace("{count}", String.valueOf(mCount))
-                         .replace("{month}", ymKey);
-                if (target != null && target.isOnline()) target.sendMessage(color(msg));
-            }
-
-            // Threshold award once per month per player
-            int threshold = Math.max(1, getConfig().getInt("monthly-reward.threshold-count", 30));
-            if (mCount >= threshold) {
-                String awardFlag = "month." + ymKey + ".awarded." + playerKey;
-                if (!stats.getBoolean(awardFlag, false)) {
-                    int amount = Math.max(0, getConfig().getInt("monthly-reward.threshold-amount", 5000));
-                    java.util.List<String> cmds = getConfig().getStringList("monthly-reward.threshold-award-commands");
-                    if (cmds == null || cmds.isEmpty()) {
-                        cmds = java.util.Arrays.asList("cash add {player} {amount}");
-                    }
-                    java.util.Map<String,String> vars = new java.util.HashMap<>();
-                    vars.put("{player}", playerName);
-                    vars.put("{amount}", String.valueOf(amount));
-                    vars.put("{count}", String.valueOf(mCount));
-                    vars.put("{month}", ymKey);
-                    runCommands(cmds, vars);
-                    stats.set(awardFlag, true);
-                    // Message after award
-                    String got = getConfig().getString("monthly-reward.threshold-awarded-message",
-                            "&a[추천] 이번 달 {threshold}회 달성! &e{amount} 캐시 지급 완료.");
-                    if (target != null && target.isOnline()) {
-                        target.sendMessage(color(got.replace("{threshold}", String.valueOf(threshold))
-                                                    .replace("{amount}", String.valueOf(amount))
-                                                    .replace("{count}", String.valueOf(mCount))
-                                                    .replace("{month}", ymKey)));
-                    }
-                }
-            }
-        } catch (Throwable ignored) { }
-        /*__MONTHLY_THRESHOLD_PATCH_END__*/
+        
     saveYaml(stats, statsFile);
         saveYaml(queue, queueFile);
     }
@@ -314,7 +254,67 @@ private void hookVotifier() {
             target.sendMessage(color(getConfig().getString("reset-countdown.message", "&7[마인리스트 초기화까지 남은시간] &f{time}")
                     .replace("{time}", left)));
         }
-        maybeBroadcastReward(playerName, type);
+        
+            /*__MONTHLY_THRESHOLD_PATCH__*/
+            try {
+                java.time.ZoneId zone;
+                try {
+                    zone = java.time.ZoneId.of(getConfig().getString("monthly-reward.timezone", "Asia/Seoul"));
+                } catch (Throwable t) {
+                    zone = java.time.ZoneId.systemDefault();
+                }
+                java.time.LocalDate today = java.time.LocalDate.now(zone);
+                String ymKey = today.format(java.time.format.DateTimeFormatter.ofPattern("yyyyMM"));
+                String playerKey = playerName.toLowerCase(java.util.Locale.ROOT);
+
+                // Increment monthly count
+                String monthCounterKey = "month." + ymKey + ".byPlayer." + playerKey;
+                int mCount = stats.getInt(monthCounterKey, 0) + 1;
+                stats.set(monthCounterKey, mCount);
+
+                // Notice on each vote (config editable)
+                if (getConfig().getBoolean("monthly-reward.notice-on-vote.enabled", true)) {
+                    String msg = getConfig().getString("monthly-reward.notice-on-vote.message",
+                            "&7[추천] 매달 {threshold}회 이상 추천 시 &e{amount} 캐시 지급! &7(이번 달 {count}회)");
+                    msg = msg.replace("{threshold}", String.valueOf(getConfig().getInt("monthly-reward.threshold-count", 30)))
+                             .replace("{amount}", String.valueOf(getConfig().getInt("monthly-reward.threshold-amount", 5000)))
+                             .replace("{top1_amount}", String.valueOf(getConfig().getInt("monthly-reward.top1-amount", 10000)))
+                             .replace("{count}", String.valueOf(mCount))
+                             .replace("{month}", ymKey);
+                    if (target != null && target.isOnline()) target.sendMessage(color(msg));
+                }
+
+                // Threshold award once per month per player
+                int threshold = Math.max(1, getConfig().getInt("monthly-reward.threshold-count", 30));
+                if (mCount >= threshold) {
+                    String awardFlag = "month." + ymKey + ".awarded." + playerKey;
+                    if (!stats.getBoolean(awardFlag, false)) {
+                        int amount = Math.max(0, getConfig().getInt("monthly-reward.threshold-amount", 5000));
+                        java.util.List<String> cmds = getConfig().getStringList("monthly-reward.threshold-award-commands");
+                        if (cmds == null || cmds.isEmpty()) {
+                            cmds = java.util.Arrays.asList("cash add {player} {amount}");
+                        }
+                        java.util.Map<String,String> vars = new java.util.HashMap<>();
+                        vars.put("{player}", playerName);
+                        vars.put("{amount}", String.valueOf(amount));
+                        vars.put("{count}", String.valueOf(mCount));
+                        vars.put("{month}", ymKey);
+                        runCommands(cmds, vars);
+                        stats.set(awardFlag, true);
+                        // Message after award
+                        String got = getConfig().getString("monthly-reward.threshold-awarded-message",
+                                "&a[추천] 이번 달 {threshold}회 달성! &e{amount} 캐시 지급 완료.");
+                        if (target != null && target.isOnline()) {
+                            target.sendMessage(color(got.replace("{threshold}", String.valueOf(threshold))
+                                                        .replace("{amount}", String.valueOf(amount))
+                                                        .replace("{count}", String.valueOf(mCount))
+                                                        .replace("{month}", ymKey)));
+                        }
+                    }
+                }
+            } catch (Throwable ignored) { }
+            /*__MONTHLY_THRESHOLD_PATCH_END__*/
+maybeBroadcastReward(playerName, type);
     }
 
     
@@ -368,7 +368,12 @@ private void maybeBroadcastReward(String pName, ServiceType type) {
             String dailyKey = "daily." + dayKey + "." + playerKey;
             stats.set(dailyKey, stats.getInt(dailyKey, 0) + 1);
 
-                    } catch (Throwable t) { /* ignore time errors */ }
+            // daily counter (YYYYMMDD)
+            String dayKey = today.format(java.time.format.DateTimeFormatter.BASIC_ISO_DATE);
+            String dailyKey = "daily." + dayKey + "." + playerKey;
+            stats.set(dailyKey, stats.getInt(dailyKey, 0) + 1);
+
+        } catch (Throwable t) { /* ignore time errors */ }
 
         saveYaml(stats, statsFile);
     }
