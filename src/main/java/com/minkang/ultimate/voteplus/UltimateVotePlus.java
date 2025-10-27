@@ -1,4 +1,5 @@
 package com.minkang.ultimate.voteplus;
+/*__TODAY_COUNT_PLACEHOLDER_PATCH__*/
 
 import com.minkang.ultimate.voteplus.util.ItemSerializer;
 import org.bukkit.Bukkit;
@@ -134,7 +135,18 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
                 int _cnt = stats.getInt("daily." + _day + "." + _key, 0);
                 String _badge = "&7[ &f오늘 누적 추천수 " + _cnt + " &7]";
                 // send first line with badge (convert color codes)
-                pl.spigot().sendMessage(net.md_5.bungee.api.chat.TextComponent.fromLegacyText(line1 + " " + color(_badge)));
+                String __line = line1;
+try {
+    String __repl = __line
+        .replace("{today}", String.valueOf(_cnt))
+        .replace("{today_count}", String.valueOf(_cnt));
+    // Korean literal variant: "오늘 누적 추천수 n"
+    __repl = __repl.replaceAll("오늘\s*누적\s*추천수\s*n", "오늘 누적 추천수 " + _cnt);
+} catch (Throwable __t) { /* ignore */ }
+// If user didn't include a placeholder, append badge
+boolean __hasPlaceholder = __line.contains("{today}") || __line.contains("{today_count}") || __line.contains("오늘 누적 추천수");
+String __final = __hasPlaceholder ? __line : (__line + " " + color(_badge));
+pl.spigot().sendMessage(net.md_5.bungee.api.chat.TextComponent.fromLegacyText(__final));
 // 2) Line 2: [ 마인리스트 추천 보상 클릭 ] (RUN_COMMAND)
                 net.md_5.bungee.api.chat.TextComponent rewardButton =
                         new net.md_5.bungee.api.chat.TextComponent(
