@@ -10,3 +10,9 @@ Version bump to 1.9.2.
 1.9.6: Disable legacy MonthlyRewardManager payout by default with 'monthly-reward.legacy-manager.enabled: false' to prevent double payouts. Added guard in scheduler and checkMonthly().
 
 1.9.8: Fix daily count not reflecting after vote — disabled legacy MonthlyRewardManager recordVote() calls by default to prevent votes.yml overwrite. Set 'monthly-reward.legacy-manager.enabled: true' to re-enable.
+
+[Patch] 2025-10-28 (KST)
+- Fixed: "[ 오늘 누적 추천수 n ]" did not increase on actual votes for non-voting players.
+- Change: Announce badge now shows server-wide aggregated daily votes (dailyTotal.{yyyyMMdd}).
+- Change: Every received vote now increments both per-player daily count and server-wide daily total.
+- Safe: No command/config keys changed; existing data in votes.yml remains compatible.
