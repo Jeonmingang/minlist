@@ -1,0 +1,74 @@
+# UltimateRPS - config.yml
+# 1.16.5 / Java 11 / CatServer
+# 색코드 &a &b &c ... 사용 가능
+
+gui:
+  rps-title: "&0가위바위보 - {name}"
+  roulette-title: "&0보상 룰렛 - {name}"
+  start-button-name: "&a&l시작"
+  start-button-lore:
+    - "&7코인을 넣고 가위/바위/보를 선택한 뒤"
+    - "&7이 버튼을 누르면 시작합니다."
+  pick-rock-name: "&f&l바위"
+  pick-paper-name: "&f&l보"
+  pick-scissors-name: "&f&l가위"
+  coin-instruction-left: "&7여기에 코인을 넣으세요 ->"
+  coin-instruction-right: "&7<- 여기에 코인을 넣으세요"
+  pane-name: "&0 "
+  player-head-name: "&b내 선택: &f{choice}"
+  system-head-name: "&d시스템 선택: &f{choice}"
+
+messages:
+  prefix: "&a[ 가위바위보 ]&f "
+  no-station: "&c설치된 장소가 아닙니다."
+  coin-not-set: "&c이 장소의 코인이 아직 설정되지 않았습니다. 관리자에게 문의하세요."
+  coin-wrong: "&c코인은 &f설정된 아이템&c만 넣을 수 있습니다."
+  coin-too-much: "&c코인은 최대 3개까지만 넣을 수 있습니다."
+  need-choose: "&c가위/바위/보 중 하나를 선택하세요."
+  need-coin: "&c코인을 1~3개 넣어주세요."
+  installed: "&a설치 완료: &e{name}&a (다이아 블럭 배치)"
+  removed: "&c제거 완료: &e{name}"
+  coin-set: "&a코인 설정 완료: &e{name}&a - 손에 든 아이템으로 설정"
+  hologram-on: "&a홀로그램 ON: &e{name}"
+  hologram-off: "&c홀로그램 OFF: &e{name}"
+  reloaded: "&a설정을 리로드했습니다."
+  countdown: "&73... &72... &71..."
+  draw: "&e무승부! 다시 선택해주세요."
+  lose: "&c패배! 베팅한 코인은 회수되었습니다."
+  # 브로드캐스트: 승리했을 때 전체채팅
+  win-broadcast: "&a{player}&f 님이 &b{name}&f 에서 &e{bet}개&f를 걸고 &b×{multiplier}&f에 당첨되어 &f{coin}&f &a{win}개&f를 획득!"
+  # 플레이어에게도 개인 메시지
+  win-self: "&a축하합니다! ×{multiplier} 배에 당첨되어 {win}개를 획득했습니다."
+
+hologram:
+  enabled-by-default: true
+  lines:
+    - "&b&l가위바위보 도박"
+    - "&e기계: &f{name}"
+    - "&6코인: &f&n{coin}"
+    - "&6배수정보: {최소}배 ~ {최대}배"
+    - "&7우클릭하여 시작"
+
+# 기본 웨지 확률 (가중치). 합계는 아무 값이어도 됩니다. 0이면 1로 보정됩니다.
+default-wedges:
+  # index는 1~20 (배수)
+  - 50  # x1
+  - 35  # x2
+  - 25  # x3
+  - 20  # x4
+  - 15  # x5
+  - 10  # x6
+  - 9   # x7
+  - 8   # x8
+  - 7   # x9
+  - 6   # x10
+  - 5   # x11
+  - 4   # x12
+  - 3   # x13
+  - 3   # x14
+  - 2   # x15
+  - 2   # x16
+  - 2   # x17
+  - 2   # x18
+  - 1   # x19
+  - 1   # x20
