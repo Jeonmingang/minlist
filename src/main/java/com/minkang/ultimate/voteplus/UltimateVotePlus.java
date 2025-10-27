@@ -127,12 +127,12 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
             for (Player pl : Bukkit.getOnlinePlayers()) {
                 
                 // 1) Line 1: prefix + " &b보상 &f받아가세요" (with safe today-count injection)
-                String line1Base = prefixText + color(" &b보상 &f받아가세요");\
-                java.time.ZoneId __z;\
-                try { __z = java.time.ZoneId.of(getConfig().getString("monthly-reward.timezone","Asia/Seoul")); }\
-                catch (Throwable __t) { __z = java.time.ZoneId.systemDefault(); }\
-                String _day = java.time.LocalDate.now(__z).format(java.time.format.DateTimeFormatter.BASIC_ISO_DATE);\
-                int _cnt = stats.getInt("dailyTotal." + _day, 0);\
+                String line1Base = prefixText + color(" &b보상 &f받아가세요");
+                java.time.ZoneId __z;
+                try { __z = java.time.ZoneId.of(getConfig().getString("monthly-reward.timezone","Asia/Seoul")); }
+                catch (Throwable __t) { __z = java.time.ZoneId.systemDefault(); }
+                String _day = java.time.LocalDate.now(__z).format(java.time.format.DateTimeFormatter.BASIC_ISO_DATE);
+                int _cnt = stats.getInt("dailyTotal." + _day, 0);
                 String _badge = "&7[ &f오늘 누적 추천수 " + _cnt + " &7]";
 
                 String firstLine = line1Base;
@@ -382,9 +382,8 @@ private void maybeBroadcastReward(String pName, ServiceType type) {
             String dailyKey = "daily." + dayKey + "." + playerKey;
             stats.set(dailyKey, stats.getInt(dailyKey, 0) + 1);
 
-\
-            String dailyTotalKey = "dailyTotal." + dayKey;\
-            stats.set(dailyTotalKey, stats.getInt(dailyTotalKey, 0) + 1);\
+            String dailyTotalKey = "dailyTotal." + dayKey;
+            stats.set(dailyTotalKey, stats.getInt(dailyTotalKey, 0) + 1);
             } catch (Throwable t) { /* ignore time errors */ }
 
         saveYaml(stats, statsFile);
