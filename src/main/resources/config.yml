@@ -1,0 +1,63 @@
+# UltimateVotePlus - config.yml (v1.7.7)
+# Lines starting with '#' are comments.
+
+links:
+  minelist: https://minelist.kr/servers/16673-sarisam.kr
+  minepage: 추천하시고 보상 받아가세요 캐시 및 추천코인 지급
+announce:
+  enabled: true
+  interval-seconds: 240
+  message: '&a[ 알림 ]&f 마인리스트 추천 부탁드립니다!'
+reward:
+  queue-offline: true
+  allow-fuzzy-online-lookup: true
+broadcast-on-reward:
+  enabled: true
+  message: '&a[ &f추천 &a]&f {player} 님이 &e{site}&f 추천 완료! &7[ 누적 추천수 {count_total}
+    ] &7| &a[ &f추천 &a] &6마인리스트 &b매달 최다 &a추천 &c1위&f에게 &c&n10000 캐시 &f지급'
+debug:
+  log: true
+rewards:
+  slots:
+    minelist:
+    - 10
+    - 11
+    - 12
+    - 13
+    - 14
+    - 15
+    - 16
+    minepage:
+    - 28
+    - 29
+    - 30
+    - 31
+    - 32
+    - 33
+    - 34
+  data:
+    minelist:
+  command-enabled: true
+  command: 캐시 지급 {player} 50
+  player-message: '&a[추천]&f 추천 보상으로 &e{amount} 캐시&f가 지급되었습니다.'
+reset-countdown:
+  enabled: true
+  message: '&7[마인리스트 초기화까지 남은시간] &f{time}'
+monthly-reward:
+  enabled: true
+  timezone: Asia/Seoul
+  legacy-manager:
+    enabled: false
+  threshold-count: 30
+  threshold-amount: 5000
+  top1-amount: 10000
+  notice-on-vote:
+    enabled: true
+    message: '&a[ &f추천 &a] &f매달 &e{threshold}회 &f이상 추천 시 &c&n{amount} 캐시 &f지급! &7(&f이번
+      달 {count}회&7)'
+  threshold-award-commands:
+  - 캐시 지급 {player} {amount}
+  threshold-awarded-message: '&a[추천] 이번 달 {threshold}회 달성! &e{amount} 캐시 지급 완료.'
+  top1-award-commands:
+  - 캐시 지급 {player} {amount}
+  top1-broadcast: '&e[추천] 지난달 1위 {player} ({count}회) — {amount} 캐시 지급!'
