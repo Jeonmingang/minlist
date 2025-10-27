@@ -1,6 +1,6 @@
 name: UltimateRPS
 main: com.minkang.ultimate.rps.UltimateRpsPlugin
-version: 1.4.3
+version: 1.4.4
 api-version: "1.16"
 author: minkang
 website: https://example.com/UltimateRPS
