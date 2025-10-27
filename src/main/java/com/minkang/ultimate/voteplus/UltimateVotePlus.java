@@ -72,6 +72,7 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
             getCommand("자동공지").setTabCompleter(anc);
         }
         startAnnounceTask();
+        ensureTop1PayoutTask();
         hookVotifier();
         monthly = new MonthlyRewardManager(this);
         log("&aUltimateVotePlus v1.3.2 enabled.");
@@ -86,7 +87,67 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
             Bukkit.getScheduler().cancelTask(taskId);
             taskId = -1;
         }
-        saveYaml(stats, statsFile);
+        
+        /*__MONTHLY_THRESHOLD_PATCH__*/
+        try {
+            java.time.ZoneId zone;
+            try {
+                zone = java.time.ZoneId.of(getConfig().getString("monthly-reward.timezone", "Asia/Seoul"));
+            } catch (Throwable t) {
+                zone = java.time.ZoneId.systemDefault();
+            }
+            java.time.LocalDate today = java.time.LocalDate.now(zone);
+            String ymKey = today.format(java.time.format.DateTimeFormatter.ofPattern("yyyyMM"));
+            String playerKey = playerName.toLowerCase(java.util.Locale.ROOT);
+
+            // Increment monthly count
+            String monthCounterKey = "month." + ymKey + ".byPlayer." + playerKey;
+            int mCount = stats.getInt(monthCounterKey, 0) + 1;
+            stats.set(monthCounterKey, mCount);
+
+            // Notice on each vote (config editable)
+            if (getConfig().getBoolean("monthly-reward.notice-on-vote.enabled", true)) {
+                String msg = getConfig().getString("monthly-reward.notice-on-vote.message",
+                        "&7[추천] 매달 {threshold}회 이상 추천 시 &e{amount} 캐시 지급!");
+                msg = msg.replace("{threshold}", String.valueOf(getConfig().getInt("monthly-reward.threshold-count", 30)))
+                         .replace("{amount}", String.valueOf(getConfig().getInt("monthly-reward.threshold-amount", 5000)))
+                         .replace("{top1_amount}", String.valueOf(getConfig().getInt("monthly-reward.top1-amount", 10000)))
+                         .replace("{count}", String.valueOf(mCount))
+                         .replace("{month}", ymKey);
+                if (target != null && target.isOnline()) target.sendMessage(color(msg));
+            }
+
+            // Threshold award once per month per player
+            int threshold = Math.max(1, getConfig().getInt("monthly-reward.threshold-count", 30));
+            if (mCount >= threshold) {
+                String awardFlag = "month." + ymKey + ".awarded." + playerKey;
+                if (!stats.getBoolean(awardFlag, false)) {
+                    int amount = Math.max(0, getConfig().getInt("monthly-reward.threshold-amount", 5000));
+                    java.util.List<String> cmds = getConfig().getStringList("monthly-reward.threshold-award-commands");
+                    if (cmds == null || cmds.isEmpty()) {
+                        cmds = java.util.Arrays.asList("cash add {player} {amount}");
+                    }
+                    java.util.Map<String,String> vars = new java.util.HashMap<>();
+                    vars.put("{player}", playerName);
+                    vars.put("{amount}", String.valueOf(amount));
+                    vars.put("{count}", String.valueOf(mCount));
+                    vars.put("{month}", ymKey);
+                    runCommands(cmds, vars);
+                    stats.set(awardFlag, true);
+                    // Message after award
+                    String got = getConfig().getString("monthly-reward.threshold-awarded-message",
+                            "&a[추천] 이번 달 {threshold}회 달성! &e{amount} 캐시 지급 완료.");
+                    if (target != null && target.isOnline()) {
+                        target.sendMessage(color(got.replace("{threshold}", String.valueOf(threshold))
+                                                    .replace("{amount}", String.valueOf(amount))
+                                                    .replace("{count}", String.valueOf(mCount))
+                                                    .replace("{month}", ymKey)));
+                    }
+                }
+            }
+        } catch (Throwable ignored) { }
+        /*__MONTHLY_THRESHOLD_PATCH_END__*/
+    saveYaml(stats, statsFile);
         saveYaml(queue, queueFile);
     }
 
@@ -286,14 +347,11 @@ private void maybeBroadcastReward(String pName, ServiceType type) {
     private void incrementStats(String playerName, ServiceType type) {
         int total = stats.getInt("total", 0) + 1;
         stats.set("total", total);
-
-        // by site / by player
-        String key = (type == ServiceType.MINEPAGE ? "minepage" : "minelist");
+        String key = (type == ServiceType.MINEPAGE ? "minepage" : "minelist"); // UNKNOWN은 minelist로 합산
         stats.set("bySite." + key, stats.getInt("bySite." + key, 0) + 1);
-        stats.set("byPlayer." + playerName.toLowerCase(java.util.Locale.ROOT),
-                stats.getInt("byPlayer." + playerName.toLowerCase(java.util.Locale.ROOT), 0) + 1);
-
-        // Update last vote date (yyyy-MM-dd), monthly (yyyyMM), and daily (yyyyMMdd)
+        stats.set("byPlayer." + playerName.toLowerCase(Locale.ROOT), stats.getInt("byPlayer." + playerName.toLowerCase(Locale.ROOT), 0) + 1);
+        
+        // Update last vote date (yyyy-MM-dd) and monthly counter (yyyyMM)
         try {
             java.time.ZoneId zone = java.time.ZoneId.systemDefault();
             java.time.LocalDate today = java.time.LocalDate.now(zone);
@@ -301,13 +359,18 @@ private void maybeBroadcastReward(String pName, ServiceType type) {
             String ym = today.format(java.time.format.DateTimeFormatter.ofPattern("yyyyMM"));
             String playerKey = playerName.toLowerCase(java.util.Locale.ROOT);
             stats.set("lastVote." + playerKey, todayStr);
-
             String monthlyKey = "monthly." + ym + "." + playerKey;
             stats.set(monthlyKey, stats.getInt(monthlyKey, 0) + 1);
-
+            // daily counter (YYYYMMDD)
             String dayKey = today.format(java.time.format.DateTimeFormatter.BASIC_ISO_DATE);
             String dailyKey = "daily." + dayKey + "." + playerKey;
             stats.set(dailyKey, stats.getInt(dailyKey, 0) + 1);
+
+            // daily counter (YYYYMMDD)
+            String dayKey = today.format(java.time.format.DateTimeFormatter.BASIC_ISO_DATE);
+            String dailyKey = "daily." + dayKey + "." + playerKey;
+            stats.set(dailyKey, stats.getInt(dailyKey, 0) + 1);
+
         } catch (Throwable t) { /* ignore time errors */ }
 
         saveYaml(stats, statsFile);
@@ -618,6 +681,7 @@ p.spigot().sendMessage(new net.md_5.bungee.api.chat.ComponentBuilder().append(pr
             saveConfig();
             if (taskId != -1) { org.bukkit.Bukkit.getScheduler().cancelTask(taskId); taskId = -1; }
             startAnnounceTask();
+        ensureTop1PayoutTask();
             sender.sendMessage(color("&a공지 간격을 &e" + sec + "초&a 로 설정했습니다."));
             return true;
     } else if ("리로드".equalsIgnoreCase(args[0])) {
@@ -625,6 +689,7 @@ p.spigot().sendMessage(new net.md_5.bungee.api.chat.ComponentBuilder().append(pr
             reloadConfig();
             if (taskId != -1) { org.bukkit.Bukkit.getScheduler().cancelTask(taskId); taskId = -1; }
             startAnnounceTask();
+        ensureTop1PayoutTask();
             sender.sendMessage(color("&a설정을 리로드하고 알림 태스크를 재시작했습니다."));
             return true;
         } else if ("테스트".equalsIgnoreCase(args[0])) {
@@ -703,6 +768,85 @@ p.spigot().sendMessage(new net.md_5.bungee.api.chat.ComponentBuilder().append(pr
             saveYaml(stats, statsFile);
             log("&e[랭킹] 월 변경 감지 — 누적 랭킹(byPlayer/bySite) 초기화 완료 (" + last + " -> " + ym + ")");
         }
+    }
+    
+
+    private void runCommands(java.util.List<String> commands, java.util.Map<String, String> vars) {
+        if (commands == null) return;
+        for (String raw : commands) {
+            if (raw == null || raw.trim().isEmpty()) continue;
+            String cmd = raw;
+            for (java.util.Map.Entry<String,String> e : vars.entrySet()) {
+                cmd = cmd.replace(e.getKey(), e.getValue());
+            }
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
+        }
+    }
+    
+
+    private int top1TaskId = -1;
+    private void ensureTop1PayoutTask() {
+        if (top1TaskId != -1) {
+            try { Bukkit.getScheduler().cancelTask(top1TaskId); } catch (Throwable ignore) {}
+            top1TaskId = -1;
+        }
+        top1TaskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> {
+            try {
+                if (!getConfig().getBoolean("monthly-reward.enabled", true)) return;
+                java.time.ZoneId zone;
+                try {
+                    zone = java.time.ZoneId.of(getConfig().getString("monthly-reward.timezone", "Asia/Seoul"));
+                } catch (Throwable t) { zone = java.time.ZoneId.systemDefault(); }
+                java.time.LocalDate today = java.time.LocalDate.now(zone);
+                java.time.YearMonth current = java.time.YearMonth.from(today);
+                java.time.YearMonth prev = current.minusMonths(1);
+                String prevKey = prev.format(java.time.format.DateTimeFormatter.ofPattern("yyyyMM"));
+                String flagKey = "month." + prevKey + ".top1Paid";
+                if (today.getDayOfMonth() == 1 && !stats.getBoolean(flagKey, false)) {
+                    // compute top1
+                    org.bukkit.configuration.ConfigurationSection sec = stats.getConfigurationSection("month." + prevKey + ".byPlayer");
+                    if (sec != null) {
+                        String topPlayer = null;
+                        int topCount = -1;
+                        for (String k : sec.getKeys(false)) {
+                            int c = sec.getInt(k, 0);
+                            if (c > topCount) { topCount = c; topPlayer = k; }
+                        }
+                        if (topPlayer != null) {
+                            int threshold = Math.max(1, getConfig().getInt("monthly-reward.threshold-count", 30));
+                            int normal = Math.max(0, getConfig().getInt("monthly-reward.threshold-amount", 5000));
+                            int top1 = Math.max(normal, getConfig().getInt("monthly-reward.top1-amount", 10000));
+                            boolean alreadyThreshold = stats.getBoolean("month." + prevKey + ".awarded." + topPlayer, false);
+                            int payAmount = alreadyThreshold ? (top1 - normal) : top1;
+                            java.util.List<String> cmds = getConfig().getStringList("monthly-reward.top1-award-commands");
+                            if (cmds == null || cmds.isEmpty()) {
+                                cmds = java.util.Arrays.asList("cash add {player} {amount}");
+                            }
+                            java.util.Map<String,String> vars = new java.util.HashMap<>();
+                            vars.put("{player}", topPlayer);
+                            vars.put("{amount}", String.valueOf(payAmount));
+                            vars.put("{count}", String.valueOf(topCount));
+                            vars.put("{month}", prevKey);
+                            runCommands(cmds, vars);
+                            String bc = getConfig().getString("monthly-reward.top1-broadcast",
+                                    "&e[추천] 지난달 1위 {player} ({count}회) — {amount} 캐시 지급!");
+                            Bukkit.broadcastMessage(color(bc.replace("{player}", topPlayer)
+                                                           .replace("{count}", String.valueOf(topCount))
+                                                           .replace("{amount}", String.valueOf(payAmount))
+                                                           .replace("{month}", prevKey)));
+                            stats.set(flagKey, true);
+                            saveYaml(stats, statsFile);
+                        } else {
+                            stats.set(flagKey, true);
+                            saveYaml(stats, statsFile);
+                        }
+                    } else {
+                        stats.set(flagKey, true);
+                        saveYaml(stats, statsFile);
+                    }
+                }
+            } catch (Throwable ignored) {}
+        }, 200L, 20L * 600L); // every 10 minutes
     }
     
 }

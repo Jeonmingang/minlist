@@ -1,0 +1,22 @@
+UltimateVotePlus 1.9.0 — Monthly Threshold & Top1 Rewards
+- New: Monthly threshold reward — if a player reaches >=30 votes in a month, pay 5,000 cash (configurable).
+- New: Top1 monthly reward — the 1st place by monthly votes gets 10,000 cash (configurable).
+  • If they already received the 5,000 threshold award, only the difference (5,000) is additionally paid on the 1st day.
+- New: Per-vote personal notice message telling players about the monthly 30-vote reward (config-editable).
+- Added config:
+  monthly-reward.threshold-count (default 30)
+  monthly-reward.threshold-amount (default 5000)
+  monthly-reward.top1-amount (default 10000)
+  monthly-reward.notice-on-vote.enabled (default true)
+  monthly-reward.notice-on-vote.message (supports {threshold}, {amount}, {top1_amount}, {count}, {month})
+  monthly-reward.threshold-award-commands (default: cash add {player} {amount})
+  monthly-reward.threshold-awarded-message
+  monthly-reward.top1-award-commands
+  monthly-reward.top1-broadcast
+- Auto task runs every 10 minutes to pay the previous month's Top1 on the 1st day according to server timezone.
+- Version bump: plugin.yml & pom.xml -> 1.9.0
+
+Implementation notes:
+- Counts are stored at stats.yml: month.<yyyyMM>.byPlayer.<playerLower>=N
+- Threshold award flags: stats.yml: month.<yyyyMM>.awarded.<playerLower>=true
+- Top1 paid flag: stats.yml: month.<yyyyMM>.top1Paid=true
