@@ -1,6 +1,6 @@
 name: UltimateVotePlus
 main: com.minkang.ultimate.voteplus.UltimateVotePlus
-version: 1.8.1
+version: 1.8.2
 api-version: "1.16"
 author: minkang
 commands:
@@ -14,7 +14,7 @@ commands:
     usage: /추천 [보상|보상보기|보상미리보기]
   자동공지:
     description: 자동 공지 메시지 관리
-    usage: /자동공지 <추가|삭제|시간>
+    usage: /자동공지 <추가|삭제|시간|목록>
 permissions:
   ultimatevoteplus.autonotice:
     default: op

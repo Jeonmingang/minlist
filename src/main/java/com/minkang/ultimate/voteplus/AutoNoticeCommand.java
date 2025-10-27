@@ -30,6 +30,7 @@ public class AutoNoticeCommand implements CommandExecutor, TabCompleter {
             sender.sendMessage(c("&a/자동공지 추가 <번호> <내용>"));
             sender.sendMessage(c("&a/자동공지 삭제 <번호>"));
             sender.sendMessage(c("&a/자동공지 시간 <번호> <초>"));
+            sender.sendMessage(c("&a/자동공지 목록"));
             sender.sendMessage(c("&7현재 등록된 공지: &f" + manager.getIds()));
             return true;
         }
@@ -63,7 +64,24 @@ public class AutoNoticeCommand implements CommandExecutor, TabCompleter {
             return true;
         }
 
-        sender.sendMessage(c("&c사용법: /자동공지 추가 <번호> <내용> | 삭제 <번호> | 시간 <번호> <초>"));
+        else if (sub.equalsIgnoreCase("목록")) {
+    java.util.List<String> ids = manager.getIds();
+    if (ids.isEmpty()) {
+        sender.sendMessage(c("&7등록된 자동공지가 없습니다."));
+        return true;
+    }
+    sender.sendMessage(c("&a[자동공지 목록] (&f" + ids.size() + "&a개)"));
+    for (String id : ids) {
+        String text = manager.getText(id);
+        int sec = manager.getSeconds(id);
+        boolean on = (sec > 0) && (text != null) && (!text.trim().isEmpty());
+        String preview = (text == null ? "" : text.replace("\n"," ").replace("|"," | "));
+        if (preview.length() > 64) preview = preview.substring(0, 61) + "...";
+        sender.sendMessage(c("&e#" + id + " &7(" + (sec) + "초) " + (on ? "&a[ON]" : "&c[OFF]") + " &f" + preview));
+    }
+    return true;
+}
+            sender.sendMessage(c("&c사용법: /자동공지 추가 <번호> <내용> | 삭제 <번호> | 시간 <번호> <초>"));
         return true;
     }
 
@@ -71,7 +89,7 @@ public class AutoNoticeCommand implements CommandExecutor, TabCompleter {
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (!command.getName().equals("자동공지")) return Collections.emptyList();
         if (args.length == 1) {
-            return Arrays.asList("추가", "삭제", "시간");
+            return Arrays.asList("추가", "삭제", "시간", "목록");
         } else if (args.length == 2) {
             return manager.getIds();
         } else if (args.length == 3 && "시간".equalsIgnoreCase(args[0])) {
