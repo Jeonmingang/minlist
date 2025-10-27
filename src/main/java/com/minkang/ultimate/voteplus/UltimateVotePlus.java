@@ -223,9 +223,8 @@ private void hookVotifier() {
         }
 
         incrementStats(playerName, type);
-        if (monthly != null) monthly.recordVote(playerName);
-        
-        // Per-vote cash reward via console command
+        if (getConfig().getBoolean("monthly-reward.legacy-manager.enabled", false) && monthly != null) monthly.recordVote(playerName);
+// Per-vote cash reward via console command
         if (getConfig().getBoolean("vote-reward.command-enabled", true)) {
             String cmd = getConfig().getString("vote-reward.command", "캐시 지급 {player} 50")
                     .replace("{player}", playerName)
