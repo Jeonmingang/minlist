@@ -1,5 +1,4 @@
 package com.minkang.ultimate.voteplus;
-/*__TODAY_COUNT_PLACEHOLDER_PATCH__*/
 
 import com.minkang.ultimate.voteplus.util.ItemSerializer;
 import org.bukkit.Bukkit;
@@ -126,27 +125,27 @@ public class UltimateVotePlus extends JavaPlugin implements Listener {
 
         taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> {
             for (Player pl : Bukkit.getOnlinePlayers()) {
-                // 1) Line 1: prefix + " &b보상 &f받아가세요"
                 
-                String line1 = prefixText + color(" &b보상 &f받아가세요");
+                // 1) Line 1: prefix + " &b보상 &f받아가세요" (with safe today-count injection)
+                String line1Base = prefixText + color(" &b보상 &f받아가세요");
                 String _day = java.time.LocalDate.now(java.time.ZoneId.of(getConfig().getString("monthly-reward.timezone","Asia/Seoul")))
                         .format(java.time.format.DateTimeFormatter.BASIC_ISO_DATE);
                 String _key = pl.getName().toLowerCase(java.util.Locale.ROOT);
                 int _cnt = stats.getInt("daily." + _day + "." + _key, 0);
                 String _badge = "&7[ &f오늘 누적 추천수 " + _cnt + " &7]";
-                // send first line with badge (convert color codes)
-                String __line = line1;
-try {
-    String __repl = __line
-        .replace("{today}", String.valueOf(_cnt))
-        .replace("{today_count}", String.valueOf(_cnt));
-    // Korean literal variant: "오늘 누적 추천수 n"
-    __repl = __repl.replaceAll("오늘\s*누적\s*추천수\s*n", "오늘 누적 추천수 " + _cnt);
-} catch (Throwable __t) { /* ignore */ }
-// If user didn't include a placeholder, append badge
-boolean __hasPlaceholder = __line.contains("{today}") || __line.contains("{today_count}") || __line.contains("오늘 누적 추천수");
-String __final = __hasPlaceholder ? __line : (__line + " " + color(_badge));
-pl.spigot().sendMessage(net.md_5.bungee.api.chat.TextComponent.fromLegacyText(__final));
+
+                String firstLine = line1Base;
+                boolean injected = false;
+                if (firstLine.contains("{today}") || firstLine.contains("{today_count}")) {
+                    firstLine = firstLine.replace("{today}", String.valueOf(_cnt)).replace("{today_count}", String.valueOf(_cnt));
+                    injected = true;
+                }
+                if (firstLine.contains("[ 오늘 누적 추천수 n ]")) {
+                    firstLine = firstLine.replace("[ 오늘 누적 추천수 n ]", color("&7[ &f오늘 누적 추천수 " + _cnt + " &7]"));
+                    injected = true;
+                }
+                String finalLine = injected ? firstLine : (firstLine + " " + color(_badge));
+                pl.spigot().sendMessage(net.md_5.bungee.api.chat.TextComponent.fromLegacyText(finalLine));
 // 2) Line 2: [ 마인리스트 추천 보상 클릭 ] (RUN_COMMAND)
                 net.md_5.bungee.api.chat.TextComponent rewardButton =
                         new net.md_5.bungee.api.chat.TextComponent(

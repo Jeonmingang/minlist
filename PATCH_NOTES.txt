@@ -10,8 +10,3 @@ Version bump to 1.9.2.
 1.9.6: Disable legacy MonthlyRewardManager payout by default with 'monthly-reward.legacy-manager.enabled: false' to prevent double payouts. Added guard in scheduler and checkMonthly().
 
 1.9.8: Fix daily count not reflecting after vote — disabled legacy MonthlyRewardManager recordVote() calls by default to prevent votes.yml overwrite. Set 'monthly-reward.legacy-manager.enabled: true' to re-enable.
-
-1.9.9 (2025-10-27 04:16): AutoNotice supports inline today-count placeholders.
-- In `announce.message`, you can use `{{today}}` or `{{today_count}}`.
-- Korean literal `오늘 누적 추천수 n` will be replaced with the actual number.
-- If no placeholder is found, plugin appends the badge as before.
