@@ -3,12 +3,6 @@ main: com.minkang.ultimate.voteplus.UltimateVotePlus
 version: 2.0.4
 api-version: "1.16"
 author: minkang
-permissions:
-  ultimatevoteplus.autonotice:
-    default: op
-    description: 자동공지 관리 권한
-
-
 commands:
   마인리스트:
     description: 추천 링크/보상 보기
