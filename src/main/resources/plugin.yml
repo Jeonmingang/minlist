@@ -1,6 +1,6 @@
 name: UltimateVotePlus
 main: com.minkang.ultimate.voteplus.UltimateVotePlus
-version: 2.0.4
+version: 2.0.5
 api-version: "1.16"
 author: minkang
 commands:
